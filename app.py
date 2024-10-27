@@ -21,7 +21,9 @@ if choice == "Parashikimi i Shitjeve":
 elif choice == "Menaxhimi i Inventarit":
     st.header("📦 Menaxhimi i Inventarit")
     st.write("Shto, menaxho dhe përditëso inventarin e biznesit tuaj.")
-    # Menaxhimi i Inventarit
+    
+    # Shto logjikë për menaxhimin e klientëve këtu...
+# Menaxhimi i Inventarit
 elif choice == "Menaxhimi i Inventarit":
     st.header("📦 Menaxhimi i Inventarit")
     st.write("Shto, menaxho dhe përditëso inventarin e biznesit tuaj.")
@@ -45,15 +47,6 @@ elif choice == "Menaxhimi i Inventarit":
     # Shfaq tabelën e inventarit aktual
     st.subheader("Inventari Aktual")
     st.dataframe(st.session_state['inventory'])
-    # Shto logjikë për menaxhimin e inventarit këtu...
-
-# Menaxhimi i Klientëve
-elif choice == "Menaxhimi i Klientëve":
-    st.header("🧑‍🤝‍🧑 Menaxhimi i Klientëve")
-    st.write("Mbaj shënim informacionet e klientëve dhe menaxho marrëdhëniet me ta.")
-    
-    # Shto logjikë për menaxhimin e klientëve këtu...
-
 # Raportet Financiare
 elif choice == "Raportet Financiare":
     st.header("💰 Raportet Financiare")
