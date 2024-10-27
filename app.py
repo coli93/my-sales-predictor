@@ -37,7 +37,7 @@ choice = st.sidebar.selectbox("Zgjidh një funksion:", menu)
 if choice == "Parashikimi i Shitjeve":
     st.header("🔮 Parashikimi i Shitjeve")
     st.write("Ky seksion ju ndihmon të parashikoni shitjet e ardhshme bazuar në të dhënat ekzistuese.")
-    months = st.number_input("Fut numrin e muajit (1-12):", min_value=1, max_value=12, step=1, key="parashikim_shitje")
+    months = st.number_input("Fut numrin e muajit (1-12):", min_value=1, max_value=12, step=1)
     if st.button("Parashiko shitjet"):
         sales = months * 2500 + 5000
         st.success(f"Parashikimi për shitjet është: {sales:.2f} €")
@@ -58,12 +58,13 @@ elif choice == "Menaxhimi i Inventarit":
     if 'inventory' not in st.session_state:
         st.session_state['inventory'] = pd.DataFrame(columns=["Emri i Produktit", "Kategori", "Sasia", "Çmimi (€)", "Data e Skadencës"])
     
+    # Shtimi i artikujve të rinj
     with st.form("add_item_form"):
-        item_name = st.text_input("Emri i Produktit", key="emri_produkt")
-        item_category = st.selectbox("Kategoria", ["Ushqim", "Pije", "Të Tjera"], key="kategoria_produkt")
-        item_qty = st.number_input("Sasia", min_value=1, step=1, key="sasia_produkt")
-        item_price = st.number_input("Çmimi (€)", min_value=0.01, step=0.01, key="cmimi_produkt")
-        item_expiry = st.date_input("Data e Skadencës (Opsionale)", value=None, key="data_skadence_produkt")
+        item_name = st.text_input("Emri i Produktit")
+        item_category = st.selectbox("Kategoria", ["Ushqim", "Pije", "Të Tjera"])
+        item_qty = st.number_input("Sasia", min_value=1, step=1)
+        item_price = st.number_input("Çmimi (€)", min_value=0.01, step=0.01)
+        item_expiry = st.date_input("Data e Skadencës (Opsionale)", value=None)
         submitted = st.form_submit_button("Shto Artikullin")
 
         if submitted:
@@ -72,13 +73,35 @@ elif choice == "Menaxhimi i Inventarit":
             st.session_state['inventory'] = pd.concat([st.session_state['inventory'], new_data], ignore_index=True)
             st.success(f"Artikulli '{item_name}' u shtua në inventar!")
 
-    # Mundësia për të fshirë artikuj nga inventari
+    # Përditësimi i artikujve ekzistues
+    st.subheader("Përditëso Artikullin")
+    if not st.session_state['inventory'].empty:
+        update_index = st.selectbox("Zgjidh artikullin për përditësim:", st.session_state['inventory'].index)
+        selected_item = st.session_state['inventory'].iloc[update_index]
+
+        with st.form("update_item_form"):
+            new_name = st.text_input("Emri i Produktit", value=selected_item["Emri i Produktit"])
+            new_category = st.selectbox("Kategoria", ["Ushqim", "Pije", "Të Tjera"], index=["Ushqim", "Pije", "Të Tjera"].index(selected_item["Kategori"]))
+            new_qty = st.number_input("Sasia", min_value=1, step=1, value=selected_item["Sasia"])
+            new_price = st.number_input("Çmimi (€)", min_value=0.01, step=0.01, value=selected_item["Çmimi (€)"])
+            new_expiry = st.date_input("Data e Skadencës (Opsionale)", value=selected_item["Data e Skadencës"])
+            update_submitted = st.form_submit_button("Përditëso Artikullin")
+
+            if update_submitted:
+                st.session_state['inventory'].at[update_index, "Emri i Produktit"] = new_name
+                st.session_state['inventory'].at[update_index, "Kategori"] = new_category
+                st.session_state['inventory'].at[update_index, "Sasia"] = new_qty
+                st.session_state['inventory'].at[update_index, "Çmimi (€)"] = new_price
+                st.session_state['inventory'].at[update_index, "Data e Skadencës"] = new_expiry
+                st.success("Artikulli u përditësua me sukses!")
+
+    # Fshirja e artikujve nga inventari
     st.subheader("Inventari Aktual")
     inventory_df = st.session_state['inventory']
-    st.dataframe(inventory_df, key="tabela_inventar")
+    st.dataframe(inventory_df)
 
     if not inventory_df.empty:
-        selected_index = st.number_input("Indeksi për të fshirë:", min_value=0, max_value=len(inventory_df) - 1, step=1, key="index_fshirje")
+        selected_index = st.number_input("Indeksi për të fshirë:", min_value=0, max_value=len(inventory_df) - 1, step=1)
         if st.button("Fshi Artikullin"):
             st.session_state['inventory'].drop(index=selected_index, inplace=True)
             st.session_state['inventory'].reset_index(drop=True, inplace=True)
@@ -92,7 +115,7 @@ elif choice == "Menaxhimi i Inventarit":
     ]
     if not expiring_soon.empty:
         st.warning("Këto produkte do të skadojnë së shpejti:")
-        st.dataframe(expiring_soon, key="tabela_skadencat")
+        st.dataframe(expiring_soon)
     else:
         st.info("Asnjë produkt nuk është afër skadimit.")
 
