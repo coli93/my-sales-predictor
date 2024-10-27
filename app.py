@@ -3,7 +3,10 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
 
-# Shto një stil të personalizuar për gjerësinë e aplikacionit
+# Përcakto konfigurimin e faqes
+st.set_page_config(page_title="Biznesi Menaxhimi - All in One", layout="centered")
+
+# Shto një stil të personalizuar për të rregulluar pamjen e aplikacionit
 st.markdown(
     """
     <style>
