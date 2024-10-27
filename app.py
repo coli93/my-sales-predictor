@@ -1,9 +1,9 @@
-import streamlit as st
+import streamlit as stimport streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
 
-# Shto një stil të personalizuar për dizajnin e aplikacionit
+# Shto një stil të personalizuar për të zvogëluar gjerësinë e përmbajtjes
 st.markdown(
     """
     <style>
@@ -31,16 +31,20 @@ menu = [
 ]
 choice = st.sidebar.selectbox("Zgjidh një funksion:", menu)
 
+# Funksioni për të fshirë një produkt nga inventari
+def delete_product(index):
+    if 'inventory' in st.session_state:
+        st.session_state['inventory'].drop(index, inplace=True)
+        st.session_state['inventory'].reset_index(drop=True, inplace=True)
+
 # Parashikimi i Shitjeve
 if choice == "Parashikimi i Shitjeve":
     st.header("🔮 Parashikimi i Shitjeve")
     st.write("Ky seksion ju ndihmon të parashikoni shitjet e ardhshme bazuar në të dhënat ekzistuese.")
     months = st.number_input("Fut numrin e muajit (1-12):", min_value=1, max_value=12, step=1)
     if st.button("Parashiko shitjet"):
-        # Ky shembull përdor një model linear të thjeshtë për parashikim (përdorni të dhënat reale për rezultate më të sakta)
         sales = months * 2500 + 5000
         st.success(f"Parashikimi për shitjet është: {sales:.2f} €")
-        # Grafiku
         x = list(range(1, months + 1))
         y = [i * 2500 + 5000 for i in x]
         plt.plot(x, y)
@@ -54,7 +58,6 @@ elif choice == "Menaxhimi i Inventarit":
     st.header("📦 Menaxhimi i Inventarit")
     st.write("Shto, menaxho dhe përditëso inventarin e biznesit tuaj.")
     
-    # Kontrollo nëse ekziston DataFrame për inventarin në sesionin e Streamlit
     if 'inventory' not in st.session_state:
         st.session_state['inventory'] = pd.DataFrame(columns=["Emri i Produktit", "Kategori", "Sasia", "Çmimi (€)", "Data e Skadencës"])
 
@@ -73,28 +76,20 @@ elif choice == "Menaxhimi i Inventarit":
             st.session_state['inventory'] = pd.concat([st.session_state['inventory'], new_data], ignore_index=True)
             st.success(f"Artikulli '{item_name}' u shtua në inventar!")
 
-    # Përditësimi dhe fshirja e artikujve të inventarit
-    st.subheader("Menaxho Artikujt e Inventarit")
-    selected_product = st.selectbox("Zgjidh Produktin për Përditësim/Fshirje", st.session_state['inventory']['Emri i Produktit'].unique())
-    if selected_product:
-        row = st.session_state['inventory'][st.session_state['inventory']['Emri i Produktit'] == selected_product]
-        if not row.empty:
-            item_name = st.text_input("Emri i Produktit", row.iloc[0]['Emri i Produktit'])
-            item_category = st.selectbox("Kategoria", ["Ushqim", "Pije", "Të Tjera"], index=["Ushqim", "Pije", "Të Tjera"].index(row.iloc[0]['Kategori']))
-            item_qty = st.number_input("Sasia", min_value=1, step=1, value=row.iloc[0]['Sasia'])
-            item_price = st.number_input("Çmimi (€)", min_value=0.01, step=0.01, value=row.iloc[0]['Çmimi (€)'])
-            item_expiry = st.date_input("Data e Skadencës (Opsionale)", value=row.iloc[0]['Data e Skadencës'])
-            if st.button("Përditëso Artikullin"):
-                index = st.session_state['inventory'][st.session_state['inventory']['Emri i Produktit'] == selected_product].index
-                st.session_state['inventory'].loc[index, ['Emri i Produktit', 'Kategori', 'Sasia', 'Çmimi (€)', 'Data e Skadencës']] = [item_name, item_category, item_qty, item_price, item_expiry]
-                st.success(f"Artikulli '{item_name}' u përditësua me sukses!")
-            if st.button("Fshij Artikullin"):
-                st.session_state['inventory'] = st.session_state['inventory'][st.session_state['inventory']['Emri i Produktit'] != selected_product]
-                st.success(f"Artikulli '{selected_product}' u fshi me sukses!")
-
     # Tabela e Inventarit
     st.subheader("Inventari Aktual")
-    st.dataframe(st.session_state['inventory'])
+    for index, row in st.session_state['inventory'].iterrows():
+        col1, col2, col3 = st.columns([3, 2, 1])
+        with col1:
+            st.write(f"{row['Emri i Produktit']} - {row['Kategori']} - Sasia: {row['Sasia']} - Çmimi: {row['Çmimi (€)']}€ - Skadon më: {row['Data e Skadencës']}")
+        with col2:
+            if st.button("Përditëso", key=f"edit_{index}"):
+                # Vendos logjikën për përditësim këtu
+                pass
+        with col3:
+            if st.button("Fshi", key=f"delete_{index}"):
+                delete_product(index)
+                st.warning(f"Artikulli '{row['Emri i Produktit']}' u fshi.")
 
     # Kontrollo produktet afër skadimit dhe lajmëro përdoruesin
     st.subheader("Produktet Afër Skadimit")
