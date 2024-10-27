@@ -99,5 +99,28 @@ elif choice == "Raportet Financiare":
 elif choice == "Menaxhimi i Punonjësve":
     st.header("👷‍♀️ Menaxhimi i Punonjësve")
     st.write("Shto dhe menaxho punonjësit e biznesit tuaj.")
-    
+    # Logjikë për Menaxhimin e Punonjësve
+
+    # Ruaj të dhënat e punonjësve në një DataFrame
+    if 'employees' not in st.session_state:
+        st.session_state['employees'] = pd.DataFrame(columns=["Emri", "Mbiemri", "Pozita", "Numri i Telefonit", "Email"])
+
+    # Form për të shtuar punonjës të rinj
+    with st.form("add_employee_form"):
+        emp_first_name = st.text_input("Emri")
+        emp_last_name = st.text_input("Mbiemri")
+        emp_position = st.text_input("Pozita")
+        emp_phone = st.text_input("Numri i Telefonit")
+        emp_email = st.text_input("Email")
+        emp_submitted = st.form_submit_button("Shto Punonjësin")
+
+    if emp_submitted:
+        new_emp_data = pd.DataFrame([[emp_first_name, emp_last_name, emp_position, emp_phone, emp_email]],
+                                    columns=["Emri", "Mbiemri", "Pozita", "Numri i Telefonit", "Email"])
+        st.session_state['employees'] = pd.concat([st.session_state['employees'], new_emp_data], ignore_index=True)
+        st.success(f"Punonjësi '{emp_first_name} {emp_last_name}' u shtua me sukses!")
+
+    # Shfaq tabelën e punonjësve aktual
+    st.subheader("Lista e Punonjësve")
+    st.dataframe(st.session_state['employees'])
     # Shto logjikë për menaxhimin e punonjësve këtu...
