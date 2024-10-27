@@ -41,7 +41,31 @@ elif choice == "Menaxhimi i Inventarit":
     # Shfaq tabelën e inventarit aktual
     st.subheader("Inventari Aktual")
     st.dataframe(st.session_state['inventory'])
-    
+# Menaxhimi i Klientëve
+elif choice == "Menaxhimi i Klientëve":
+    st.header("👥 Menaxhimi i Klientëve")
+    st.write("Mbaj shënim informacionet e klientëve tuaj dhe përditëso të dhënat e tyre.")
+
+    # Krijo një DataFrame për klientët
+    if 'clients' not in st.session_state:
+        st.session_state['clients'] = pd.DataFrame(columns=["Emri", "Mbiemri", "Email", "Numri i Telefonit"])
+
+    # Form për të shtuar klientë të rinj
+    with st.form("add_client_form"):
+        first_name = st.text_input("Emri")
+        last_name = st.text_input("Mbiemri")
+        email = st.text_input("Email")
+        phone_number = st.text_input("Numri i Telefonit")
+        submitted = st.form_submit_button("Shto Klientin")
+
+        if submitted:
+            new_client = pd.DataFrame([[first_name, last_name, email, phone_number]], columns=["Emri", "Mbiemri", "Email", "Numri i Telefonit"])
+            st.session_state['clients'] = pd.concat([st.session_state['clients'], new_client], ignore_index=True)
+            st.success(f"Klienti '{first_name} {last_name}' u shtua me sukses!")
+
+    # Shfaq tabelën e klientëve ekzistues
+    st.subheader("Lista e Klientëve")
+    st.dataframe(st.session_state['clients'])
     # Shto logjikë për menaxhimin e klientëve këtu...
 
 # Raportet Financiare
