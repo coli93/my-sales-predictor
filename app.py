@@ -58,7 +58,6 @@ elif choice == "Menaxhimi i Inventarit":
     if 'inventory' not in st.session_state:
         st.session_state['inventory'] = pd.DataFrame(columns=["Emri i Produktit", "Kategori", "Sasia", "Çmimi (€)", "Data e Skadencës"])
     
-    # Shtimi i artikujve të rinj
     with st.form("add_item_form"):
         item_name = st.text_input("Emri i Produktit")
         item_category = st.selectbox("Kategoria", ["Ushqim", "Pije", "Të Tjera"])
@@ -73,29 +72,7 @@ elif choice == "Menaxhimi i Inventarit":
             st.session_state['inventory'] = pd.concat([st.session_state['inventory'], new_data], ignore_index=True)
             st.success(f"Artikulli '{item_name}' u shtua në inventar!")
 
-    # Përditësimi i artikujve ekzistues
-    st.subheader("Përditëso Artikullin")
-    if not st.session_state['inventory'].empty:
-        update_index = st.selectbox("Zgjidh artikullin për përditësim:", st.session_state['inventory'].index)
-        selected_item = st.session_state['inventory'].iloc[update_index]
-
-        with st.form("update_item_form"):
-            new_name = st.text_input("Emri i Produktit", value=selected_item["Emri i Produktit"])
-            new_category = st.selectbox("Kategoria", ["Ushqim", "Pije", "Të Tjera"], index=["Ushqim", "Pije", "Të Tjera"].index(selected_item["Kategori"]))
-            new_qty = st.number_input("Sasia", min_value=1, step=1, value=selected_item["Sasia"])
-            new_price = st.number_input("Çmimi (€)", min_value=0.01, step=0.01, value=selected_item["Çmimi (€)"])
-            new_expiry = st.date_input("Data e Skadencës (Opsionale)", value=selected_item["Data e Skadencës"])
-            update_submitted = st.form_submit_button("Përditëso Artikullin")
-
-            if update_submitted:
-                st.session_state['inventory'].at[update_index, "Emri i Produktit"] = new_name
-                st.session_state['inventory'].at[update_index, "Kategori"] = new_category
-                st.session_state['inventory'].at[update_index, "Sasia"] = new_qty
-                st.session_state['inventory'].at[update_index, "Çmimi (€)"] = new_price
-                st.session_state['inventory'].at[update_index, "Data e Skadencës"] = new_expiry
-                st.success("Artikulli u përditësua me sukses!")
-
-    # Fshirja e artikujve nga inventari
+    # Mundësia për të fshirë artikuj nga inventari
     st.subheader("Inventari Aktual")
     inventory_df = st.session_state['inventory']
     st.dataframe(inventory_df)
@@ -128,10 +105,10 @@ elif choice == "Menaxhimi i Klientëve":
         st.session_state['clients'] = pd.DataFrame(columns=["Emri", "Mbiemri", "Email", "Numri i Telefonit"])
     
     with st.form("add_client_form"):
-        client_name = st.text_input("Emri", key="emri_klient")
-        client_surname = st.text_input("Mbiemri", key="mbiemri_klient")
-        client_email = st.text_input("Email", key="email_klient")
-        client_phone = st.text_input("Numri i Telefonit", key="telefoni_klient")
+        client_name = st.text_input("Emri")
+        client_surname = st.text_input("Mbiemri")
+        client_email = st.text_input("Email")
+        client_phone = st.text_input("Numri i Telefonit")
         add_client = st.form_submit_button("Shto Klientin")
         
         if add_client:
@@ -142,10 +119,10 @@ elif choice == "Menaxhimi i Klientëve":
     
     st.subheader("Lista e Klientëve")
     clients_df = st.session_state['clients']
-    st.dataframe(clients_df, key="tabela_kliente")
-    
+    st.dataframe(clients_df)
+
     if not clients_df.empty:
-        client_index = st.number_input("Indeksi për të fshirë:", min_value=0, max_value=len(clients_df) - 1, step=1, key="index_fshirje_klient")
+        client_index = st.number_input("Indeksi për të fshirë:", min_value=0, max_value=len(clients_df) - 1, step=1)
         if st.button("Fshi Klientin"):
             st.session_state['clients'].drop(index=client_index, inplace=True)
             st.session_state['clients'].reset_index(drop=True, inplace=True)
@@ -156,8 +133,8 @@ elif choice == "Raportet Financiare":
     st.header("💲 Raportet Financiare")
     st.write("Gjenero dhe analizoni raportet financiare të biznesit tuaj.")
     
-    revenue = st.number_input("Të ardhurat mujore (€)", min_value=0.00, step=0.01, key="te_ardhurat")
-    expenses = st.number_input("Shpenzimet mujore (€)", min_value=0.00, step=0.01, key="shpenzimet")
+    revenue = st.number_input("Të ardhurat mujore (€)", min_value=0.00, step=0.01)
+    expenses = st.number_input("Shpenzimet mujore (€)", min_value=0.00, step=0.01)
     
     if st.button("Gjenero Raportin"):
         profit = revenue - expenses
@@ -182,11 +159,11 @@ elif choice == "Menaxhimi i Punonjësve":
         st.session_state['employees'] = pd.DataFrame(columns=["Emri", "Mbiemri", "Pozita", "Numri i Telefonit", "Email"])
     
     with st.form("add_employee_form"):
-        employee_name = st.text_input("Emri", key="emri_punonjes")
-        employee_surname = st.text_input("Mbiemri", key="mbiemri_punonjes")
-        employee_position = st.text_input("Pozita", key="pozita_punonjes")
-        employee_phone = st.text_input("Numri i Telefonit", key="telefoni_punonjes")
-        employee_email = st.text_input("Email", key="email_punonjes")
+        employee_name = st.text_input("Emri")
+        employee_surname = st.text_input("Mbiemri")
+        employee_position = st.text_input("Pozita")
+        employee_phone = st.text_input("Numri i Telefonit")
+        employee_email = st.text_input("Email")
         add_employee = st.form_submit_button("Shto Punonjësin")
         
         if add_employee:
@@ -197,10 +174,10 @@ elif choice == "Menaxhimi i Punonjësve":
     
     st.subheader("Lista e Punonjësve")
     employees_df = st.session_state['employees']
-    st.dataframe(employees_df, key="tabela_punonjes")
-    
+    st.dataframe(employees_df)
+
     if not employees_df.empty:
-        employee_index = st.number_input("Indeksi për të fshirë:", min_value=0, max_value=len(employees_df) - 1, step=1, key="index_fshirje_punonjes")
+        employee_index = st.number_input("Indeksi për të fshirë:", min_value=0, max_value=len(employees_df) - 1, step=1)
         if st.button("Fshi Punonjësin"):
             st.session_state['employees'].drop(index=employee_index, inplace=True)
             st.session_state['employees'].reset_index(drop=True, inplace=True)
