@@ -73,9 +73,6 @@ elif choice == "Raportet Financiare":
     st.header("💰 Raportet Financiare")
     st.write("Gjenero dhe analizoni raportet financiare të biznesit tuaj.")
     # Logjikë për Raportet Financiare
-elif choice == "Raportet Financiare":
-    st.header("💵 Raportet Financiare")
-    st.write("Gjenero dhe analizo raporte financiare për biznesin tuaj.")
     
     # Form për të futur të ardhurat dhe shpenzimet
     with st.form("finance_report_form"):
