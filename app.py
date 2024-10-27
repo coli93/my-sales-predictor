@@ -3,7 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
 
-# Shto një stil të personalizuar për të zvogëluar gjerësinë e përmbajtjes
+# Shto një stil të personalizuar për gjerësinë e aplikacionit
 st.markdown(
     """
     <style>
@@ -31,12 +31,6 @@ menu = [
 ]
 choice = st.sidebar.selectbox("Zgjidh një funksion:", menu)
 
-# Funksioni për të fshirë një produkt nga inventari
-def delete_product(index):
-    if 'inventory' in st.session_state:
-        st.session_state['inventory'].drop(index, inplace=True)
-        st.session_state['inventory'].reset_index(drop=True, inplace=True)
-
 # Parashikimi i Shitjeve
 if choice == "Parashikimi i Shitjeve":
     st.header("🔮 Parashikimi i Shitjeve")
@@ -45,6 +39,7 @@ if choice == "Parashikimi i Shitjeve":
     if st.button("Parashiko shitjet"):
         sales = months * 2500 + 5000
         st.success(f"Parashikimi për shitjet është: {sales:.2f} €")
+        # Grafiku
         x = list(range(1, months + 1))
         y = [i * 2500 + 5000 for i in x]
         plt.plot(x, y)
@@ -60,8 +55,7 @@ elif choice == "Menaxhimi i Inventarit":
     
     if 'inventory' not in st.session_state:
         st.session_state['inventory'] = pd.DataFrame(columns=["Emri i Produktit", "Kategori", "Sasia", "Çmimi (€)", "Data e Skadencës"])
-
-    # Form për të shtuar artikujt e inventarit
+    
     with st.form("add_item_form"):
         item_name = st.text_input("Emri i Produktit")
         item_category = st.selectbox("Kategoria", ["Ushqim", "Pije", "Të Tjera"])
@@ -76,33 +70,29 @@ elif choice == "Menaxhimi i Inventarit":
             st.session_state['inventory'] = pd.concat([st.session_state['inventory'], new_data], ignore_index=True)
             st.success(f"Artikulli '{item_name}' u shtua në inventar!")
 
-    # Tabela e Inventarit
+    # Mundësia për të fshirë artikuj nga inventari
     st.subheader("Inventari Aktual")
-    for index, row in st.session_state['inventory'].iterrows():
-        col1, col2, col3 = st.columns([3, 2, 1])
-        with col1:
-            st.write(f"{row['Emri i Produktit']} - {row['Kategori']} - Sasia: {row['Sasia']} - Çmimi: {row['Çmimi (€)']}€ - Skadon më: {row['Data e Skadencës']}")
-        with col2:
-            if st.button("Përditëso", key=f"edit_{index}"):
-                # Vendos logjikën për përditësim këtu
-                pass
-        with col3:
-            if st.button("Fshi", key=f"delete_{index}"):
-                delete_product(index)
-                st.warning(f"Artikulli '{row['Emri i Produktit']}' u fshi.")
+    inventory_df = st.session_state['inventory']
+    st.dataframe(inventory_df)
+
+    if not inventory_df.empty:
+        selected_index = st.number_input("Indeksi për të fshirë:", min_value=0, max_value=len(inventory_df) - 1, step=1)
+        if st.button("Fshi Artikullin"):
+            st.session_state['inventory'].drop(index=selected_index, inplace=True)
+            st.session_state['inventory'].reset_index(drop=True, inplace=True)
+            st.success("Artikulli u fshi me sukses!")
 
     # Kontrollo produktet afër skadimit dhe lajmëro përdoruesin
     st.subheader("Produktet Afër Skadimit")
-    if 'inventory' in st.session_state:
-        expiring_soon = st.session_state['inventory'][
-            (st.session_state['inventory']["Data e Skadencës"].notnull()) &
-            (st.session_state['inventory']["Data e Skadencës"] <= datetime.now() + timedelta(days=7))
-        ]
-        if not expiring_soon.empty:
-            st.warning("Këto produkte do të skadojnë së shpejti:")
-            st.dataframe(expiring_soon)
-        else:
-            st.info("Asnjë produkt nuk është afër skadimit.")
+    expiring_soon = st.session_state['inventory'][
+        (st.session_state['inventory']["Data e Skadencës"].notnull()) &
+        (st.session_state['inventory']["Data e Skadencës"] <= datetime.now() + timedelta(days=7))
+    ]
+    if not expiring_soon.empty:
+        st.warning("Këto produkte do të skadojnë së shpejti:")
+        st.dataframe(expiring_soon)
+    else:
+        st.info("Asnjë produkt nuk është afër skadimit.")
 
 # Menaxhimi i Klientëve
 elif choice == "Menaxhimi i Klientëve":
@@ -126,7 +116,15 @@ elif choice == "Menaxhimi i Klientëve":
             st.success(f"Klienti '{client_name} {client_surname}' u shtua me sukses!")
     
     st.subheader("Lista e Klientëve")
-    st.dataframe(st.session_state['clients'])
+    clients_df = st.session_state['clients']
+    st.dataframe(clients_df)
+
+    if not clients_df.empty:
+        client_index = st.number_input("Indeksi për të fshirë:", min_value=0, max_value=len(clients_df) - 1, step=1)
+        if st.button("Fshi Klientin"):
+            st.session_state['clients'].drop(index=client_index, inplace=True)
+            st.session_state['clients'].reset_index(drop=True, inplace=True)
+            st.success("Klienti u fshi me sukses!")
 
 # Raportet Financiare
 elif choice == "Raportet Financiare":
@@ -149,15 +147,6 @@ elif choice == "Raportet Financiare":
             st.error("Biznesi është në humbje!")
         else:
             st.info("Biznesi është në barazim!")
-        
-        # Shembull i një grafiku për të treguar të ardhurat dhe shpenzimet mujore
-        months = ["Janar", "Shkurt", "Mars", "Prill", "Maj", "Qershor", "Korrik", "Gusht", "Shtator", "Tetor", "Nëntor", "Dhjetor"]
-        monthly_profit = [profit for _ in range(12)]
-        plt.plot(months, monthly_profit, marker='o')
-        plt.xlabel("Muajt")
-        plt.ylabel("Fitimi (€)")
-        plt.title("Fitimi Mujor gjatë Vitit")
-        st.pyplot(plt)
 
 # Menaxhimi i Punonjësve
 elif choice == "Menaxhimi i Punonjësve":
@@ -182,4 +171,12 @@ elif choice == "Menaxhimi i Punonjësve":
             st.success(f"Punonjësi '{employee_name} {employee_surname}' u shtua me sukses!")
     
     st.subheader("Lista e Punonjësve")
-    st.dataframe(st.session_state['employees'])
+    employees_df = st.session_state['employees']
+    st.dataframe(employees_df)
+
+    if not employees_df.empty:
+        employee_index = st.number_input("Indeksi për të fshirë:", min_value=0, max_value=len(employees_df) - 1, step=1)
+        if st.button("Fshi Punonjësin"):
+            st.session_state['employees'].drop(index=employee_index, inplace=True)
+            st.session_state['employees'].reset_index(drop=True, inplace=True)
+            st.success("Punonjësi u fshi me sukses!")
