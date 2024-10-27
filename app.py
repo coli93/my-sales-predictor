@@ -87,21 +87,21 @@ if choice == "Menaxhimi i Inventarit":
                 st.session_state['inventory'].at[update_index, "Data e Skadencës"] = updated_expiry
                 st.success(f"Artikulli '{updated_name}' u përditësua me sukses!")
 
-    # Kontrollo produktet afër skadimit dhe lajmëro përdoruesin
-    st.subheader("Produktet Afër Skadimit")
-    try:
-        expiring_soon = st.session_state['inventory'][
-            (st.session_state['inventory']["Data e Skadencës"].notnull()) &
-            (st.session_state['inventory']["Data e Skadencës"] <= datetime.now() + timedelta(days=7))
-        ]
-        if not expiring_soon.empty:
-            st.warning("Këto produkte do të skadojnë së shpejti:")
-            st.dataframe(expiring_soon)
-        else:
-            st.info("Asnjë produkt nuk është afër skadimit.")
-    except Exception as e:
-        st.error(f"Gabim gjatë përpunimit të skadencave: {e}")
-        
+# Kontrollo produktet afër skadimit dhe lajmëro përdoruesin
+st.subheader("Produktet Afër Skadimit")
+try:
+    expiring_soon = st.session_state['inventory'][
+        (st.session_state['inventory']["Data e Skadencës"].notnull()) &
+        (st.session_state['inventory']["Data e Skadencës"].apply(lambda x: x.date() if isinstance(x, datetime) else x) <= datetime.now().date() + timedelta(days=7))
+    ]
+    if not expiring_soon.empty:
+        st.warning("Këto produkte do të skadojnë së shpejti:")
+        st.dataframe(expiring_soon)
+    else:
+        st.info("Asnjë produkt nuk është afër skadimit.")
+except Exception as e:
+    st.error(f"Gabim gjatë përpunimit të skadencave: {e}")
+    
 # Menaxhimi i Klientëve
 elif choice == "Menaxhimi i Klientëve":
     st.header("👥 Menaxhimi i Klientëve")
