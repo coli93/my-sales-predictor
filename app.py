@@ -1,6 +1,10 @@
-st.set_page_config(page_title="Biznesi Menaxhimi – All in One")
+import streamlit as st
+import pandas as pd
+import matplotlib.pyplot as plt
+from datetime import datetime, timedelta
 
 # Titulli kryesor i aplikacionit
+st.set_page_config(page_title="Biznesi Menaxhimi – All in One")
 st.title("Biznesi Menaxhimi - All in One")
 
 # Menuja për të zgjedhur seksionin
