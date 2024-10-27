@@ -3,7 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
 
-# Përcakto konfigurimin e faqes vetëm një herë në fillim të skriptit
+# Përcakto konfigurimin e faqes vetëm një herë
 st.set_page_config(page_title="Biznesi Menaxhimi - All in One", layout="centered")
 
 # Shto një stil të personalizuar për të rregulluar pamjen e aplikacionit
@@ -86,15 +86,18 @@ elif choice == "Menaxhimi i Inventarit":
 
     # Kontrollo produktet afër skadimit dhe lajmëro përdoruesin
     st.subheader("Produktet Afër Skadimit")
-    expiring_soon = st.session_state['inventory'][
-        (st.session_state['inventory']["Data e Skadencës"].notnull()) &
-        (st.session_state['inventory']["Data e Skadencës"] <= datetime.now() + timedelta(days=7))
-    ]
-    if not expiring_soon.empty:
-        st.warning("Këto produkte do të skadojnë së shpejti:")
-        st.dataframe(expiring_soon)
-    else:
-        st.info("Asnjë produkt nuk është afër skadimit.")
+    try:
+        expiring_soon = st.session_state['inventory'][
+            (st.session_state['inventory']["Data e Skadencës"].notnull()) &
+            (st.session_state['inventory']["Data e Skadencës"] <= (datetime.now() + timedelta(days=7)).strftime('%Y-%m-%d'))
+        ]
+        if not expiring_soon.empty:
+            st.warning("Këto produkte do të skadojnë së shpejti:")
+            st.dataframe(expiring_soon)
+        else:
+            st.info("Asnjë produkt nuk është afër skadimit.")
+    except Exception as e:
+        st.error(f"Gabim gjatë kontrollimit të datave të skadimit: {e}")
 
 # Menaxhimi i Klientëve
 elif choice == "Menaxhimi i Klientëve":
