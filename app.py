@@ -87,6 +87,34 @@ elif choice == "Menaxhimi i Inventarit":
     # Kontrollo produktet afër skadimit dhe lajmëro përdoruesin
     st.subheader("Produktet Afër Skadimit")
     try:
+        inventory_df["Data e Skadencës"] = pd.to_datetime(inventory_df["Data e Skadencës"], errors='coerce')
+        expiring_soon = inventory_df[
+            (inventory_df["Data e Skadencës"].notnull()) &
+            (inventory_df["Data e Skadencës"] <= datetime.now() + timedelta(days=7))
+        ]
+        if not expiring_soon.empty:
+            st.warning("Këto produkte do të skadojnë së shpejti:")
+            st.dataframe(expiring_soon)
+        else:
+            st.info("Asnjë produkt nuk është afër skadimit.")
+    except Exception as e:
+        st.error(f"Gabim gjatë kontrollimit të datave të skadimit: {e}")
+
+    # Mundësia për të fshirë artikuj nga inventari
+    st.subheader("Inventari Aktual")
+    inventory_df = st.session_state['inventory']
+    st.dataframe(inventory_df)
+
+    if not inventory_df.empty:
+        selected_index = st.number_input("Indeksi për të fshirë:", min_value=0, max_value=len(inventory_df) - 1, step=1)
+        if st.button("Fshi Artikullin"):
+            st.session_state['inventory'].drop(index=selected_index, inplace=True)
+            st.session_state['inventory'].reset_index(drop=True, inplace=True)
+            st.success("Artikulli u fshi me sukses!")
+
+    # Kontrollo produktet afër skadimit dhe lajmëro përdoruesin
+    st.subheader("Produktet Afër Skadimit")
+    try:
         expiring_soon = st.session_state['inventory'][
             (st.session_state['inventory']["Data e Skadencës"].notnull()) &
             (st.session_state['inventory']["Data e Skadencës"] <= (datetime.now() + timedelta(days=7)).strftime('%Y-%m-%d'))
