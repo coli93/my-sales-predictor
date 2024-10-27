@@ -37,7 +37,7 @@ choice = st.sidebar.selectbox("Zgjidh një funksion:", menu)
 if choice == "Parashikimi i Shitjeve":
     st.header("🔮 Parashikimi i Shitjeve")
     st.write("Ky seksion ju ndihmon të parashikoni shitjet e ardhshme bazuar në të dhënat ekzistuese.")
-    months = st.number_input("Fut numrin e muajit (1-12):", min_value=1, max_value=12, step=1)
+    months = st.number_input("Fut numrin e muajit (1-12):", min_value=1, max_value=12, step=1, key="parashikim_shitje")
     if st.button("Parashiko shitjet"):
         sales = months * 2500 + 5000
         st.success(f"Parashikimi për shitjet është: {sales:.2f} €")
@@ -59,11 +59,11 @@ elif choice == "Menaxhimi i Inventarit":
         st.session_state['inventory'] = pd.DataFrame(columns=["Emri i Produktit", "Kategori", "Sasia", "Çmimi (€)", "Data e Skadencës"])
     
     with st.form("add_item_form"):
-        item_name = st.text_input("Emri i Produktit")
-        item_category = st.selectbox("Kategoria", ["Ushqim", "Pije", "Të Tjera"])
-        item_qty = st.number_input("Sasia", min_value=1, step=1)
-        item_price = st.number_input("Çmimi (€)", min_value=0.01, step=0.01)
-        item_expiry = st.date_input("Data e Skadencës (Opsionale)", value=None)
+        item_name = st.text_input("Emri i Produktit", key="emri_produkt")
+        item_category = st.selectbox("Kategoria", ["Ushqim", "Pije", "Të Tjera"], key="kategoria_produkt")
+        item_qty = st.number_input("Sasia", min_value=1, step=1, key="sasia_produkt")
+        item_price = st.number_input("Çmimi (€)", min_value=0.01, step=0.01, key="cmimi_produkt")
+        item_expiry = st.date_input("Data e Skadencës (Opsionale)", value=None, key="data_skadence_produkt")
         submitted = st.form_submit_button("Shto Artikullin")
 
         if submitted:
@@ -75,10 +75,10 @@ elif choice == "Menaxhimi i Inventarit":
     # Mundësia për të fshirë artikuj nga inventari
     st.subheader("Inventari Aktual")
     inventory_df = st.session_state['inventory']
-    st.dataframe(inventory_df)
+    st.dataframe(inventory_df, key="tabela_inventar")
 
     if not inventory_df.empty:
-        selected_index = st.number_input("Indeksi për të fshirë:", min_value=0, max_value=len(inventory_df) - 1, step=1)
+        selected_index = st.number_input("Indeksi për të fshirë:", min_value=0, max_value=len(inventory_df) - 1, step=1, key="index_fshirje")
         if st.button("Fshi Artikullin"):
             st.session_state['inventory'].drop(index=selected_index, inplace=True)
             st.session_state['inventory'].reset_index(drop=True, inplace=True)
@@ -86,46 +86,15 @@ elif choice == "Menaxhimi i Inventarit":
 
     # Kontrollo produktet afër skadimit dhe lajmëro përdoruesin
     st.subheader("Produktet Afër Skadimit")
-    try:
-        inventory_df["Data e Skadencës"] = pd.to_datetime(inventory_df["Data e Skadencës"], errors='coerce')
-        expiring_soon = inventory_df[
-            (inventory_df["Data e Skadencës"].notnull()) &
-            (inventory_df["Data e Skadencës"] <= datetime.now() + timedelta(days=7))
-        ]
-        if not expiring_soon.empty:
-            st.warning("Këto produkte do të skadojnë së shpejti:")
-            st.dataframe(expiring_soon)
-        else:
-            st.info("Asnjë produkt nuk është afër skadimit.")
-    except Exception as e:
-        st.error(f"Gabim gjatë kontrollimit të datave të skadimit: {e}")
-
-    # Mundësia për të fshirë artikuj nga inventari
-    st.subheader("Inventari Aktual")
-    inventory_df = st.session_state['inventory']
-    st.dataframe(inventory_df)
-
-    if not inventory_df.empty:
-        selected_index = st.number_input("Indeksi për të fshirë:", min_value=0, max_value=len(inventory_df) - 1, step=1)
-        if st.button("Fshi Artikullin"):
-            st.session_state['inventory'].drop(index=selected_index, inplace=True)
-            st.session_state['inventory'].reset_index(drop=True, inplace=True)
-            st.success("Artikulli u fshi me sukses!")
-
-    # Kontrollo produktet afër skadimit dhe lajmëro përdoruesin
-    st.subheader("Produktet Afër Skadimit")
-    try:
-        expiring_soon = st.session_state['inventory'][
-            (st.session_state['inventory']["Data e Skadencës"].notnull()) &
-            (st.session_state['inventory']["Data e Skadencës"] <= (datetime.now() + timedelta(days=7)).strftime('%Y-%m-%d'))
-        ]
-        if not expiring_soon.empty:
-            st.warning("Këto produkte do të skadojnë së shpejti:")
-            st.dataframe(expiring_soon)
-        else:
-            st.info("Asnjë produkt nuk është afër skadimit.")
-    except Exception as e:
-        st.error(f"Gabim gjatë kontrollimit të datave të skadimit: {e}")
+    expiring_soon = st.session_state['inventory'][
+        (st.session_state['inventory']["Data e Skadencës"].notnull()) &
+        (st.session_state['inventory']["Data e Skadencës"] <= datetime.now() + timedelta(days=7))
+    ]
+    if not expiring_soon.empty:
+        st.warning("Këto produkte do të skadojnë së shpejti:")
+        st.dataframe(expiring_soon, key="tabela_skadencat")
+    else:
+        st.info("Asnjë produkt nuk është afër skadimit.")
 
 # Menaxhimi i Klientëve
 elif choice == "Menaxhimi i Klientëve":
@@ -136,10 +105,10 @@ elif choice == "Menaxhimi i Klientëve":
         st.session_state['clients'] = pd.DataFrame(columns=["Emri", "Mbiemri", "Email", "Numri i Telefonit"])
     
     with st.form("add_client_form"):
-        client_name = st.text_input("Emri")
-        client_surname = st.text_input("Mbiemri")
-        client_email = st.text_input("Email")
-        client_phone = st.text_input("Numri i Telefonit")
+        client_name = st.text_input("Emri", key="emri_klient")
+        client_surname = st.text_input("Mbiemri", key="mbiemri_klient")
+        client_email = st.text_input("Email", key="email_klient")
+        client_phone = st.text_input("Numri i Telefonit", key="telefoni_klient")
         add_client = st.form_submit_button("Shto Klientin")
         
         if add_client:
@@ -150,10 +119,10 @@ elif choice == "Menaxhimi i Klientëve":
     
     st.subheader("Lista e Klientëve")
     clients_df = st.session_state['clients']
-    st.dataframe(clients_df)
-
+    st.dataframe(clients_df, key="tabela_kliente")
+    
     if not clients_df.empty:
-        client_index = st.number_input("Indeksi për të fshirë:", min_value=0, max_value=len(clients_df) - 1, step=1)
+        client_index = st.number_input("Indeksi për të fshirë:", min_value=0, max_value=len(clients_df) - 1, step=1, key="index_fshirje_klient")
         if st.button("Fshi Klientin"):
             st.session_state['clients'].drop(index=client_index, inplace=True)
             st.session_state['clients'].reset_index(drop=True, inplace=True)
@@ -164,8 +133,8 @@ elif choice == "Raportet Financiare":
     st.header("💲 Raportet Financiare")
     st.write("Gjenero dhe analizoni raportet financiare të biznesit tuaj.")
     
-    revenue = st.number_input("Të ardhurat mujore (€)", min_value=0.00, step=0.01)
-    expenses = st.number_input("Shpenzimet mujore (€)", min_value=0.00, step=0.01)
+    revenue = st.number_input("Të ardhurat mujore (€)", min_value=0.00, step=0.01, key="te_ardhurat")
+    expenses = st.number_input("Shpenzimet mujore (€)", min_value=0.00, step=0.01, key="shpenzimet")
     
     if st.button("Gjenero Raportin"):
         profit = revenue - expenses
@@ -190,11 +159,11 @@ elif choice == "Menaxhimi i Punonjësve":
         st.session_state['employees'] = pd.DataFrame(columns=["Emri", "Mbiemri", "Pozita", "Numri i Telefonit", "Email"])
     
     with st.form("add_employee_form"):
-        employee_name = st.text_input("Emri")
-        employee_surname = st.text_input("Mbiemri")
-        employee_position = st.text_input("Pozita")
-        employee_phone = st.text_input("Numri i Telefonit")
-        employee_email = st.text_input("Email")
+        employee_name = st.text_input("Emri", key="emri_punonjes")
+        employee_surname = st.text_input("Mbiemri", key="mbiemri_punonjes")
+        employee_position = st.text_input("Pozita", key="pozita_punonjes")
+        employee_phone = st.text_input("Numri i Telefonit", key="telefoni_punonjes")
+        employee_email = st.text_input("Email", key="email_punonjes")
         add_employee = st.form_submit_button("Shto Punonjësin")
         
         if add_employee:
@@ -205,10 +174,10 @@ elif choice == "Menaxhimi i Punonjësve":
     
     st.subheader("Lista e Punonjësve")
     employees_df = st.session_state['employees']
-    st.dataframe(employees_df)
-
+    st.dataframe(employees_df, key="tabela_punonjes")
+    
     if not employees_df.empty:
-        employee_index = st.number_input("Indeksi për të fshirë:", min_value=0, max_value=len(employees_df) - 1, step=1)
+        employee_index = st.number_input("Indeksi për të fshirë:", min_value=0, max_value=len(employees_df) - 1, step=1, key="index_fshirje_punonjes")
         if st.button("Fshi Punonjësin"):
             st.session_state['employees'].drop(index=employee_index, inplace=True)
             st.session_state['employees'].reset_index(drop=True, inplace=True)
