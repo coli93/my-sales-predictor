@@ -22,30 +22,43 @@ if choice == "Parashikimi i Shitjeve":
         sales_prediction = 25000 + (months * 1000)
         st.write(f"Parashikimi për shitjet është: {sales_prediction:.2f}")
 
-# Menaxhimi i Inventarit
+# Menaxhimi i Inventarit me kategori, përditësim dhe fshirje artikujsh
 elif choice == "Menaxhimi i Inventarit":
     st.header("📦 Menaxhimi i Inventarit")
     st.write("Shto, menaxho dhe përditëso inventarin e biznesit tuaj.")
 
-    # Krijo një DataFrame për inventarin nëse nuk ekziston
+    # Krjo një DataFrame për inventarin nëse nuk ekziston
     if 'inventory' not in st.session_state:
-        st.session_state['inventory'] = pd.DataFrame(columns=["Emri i Artikullit", "Sasia", "Çmimi"])
+        st.session_state['inventory'] = pd.DataFrame(columns=["Kategori", "Emri i Artikullit", "Sasia", "Çmimi"])
 
-    # Form për të shtuar artikuj
+    # Form për të shtuar artikuj dhe kategori
     with st.form("add_item_form"):
+        item_category = st.text_input("Kategoria e Produktit")
         item_name = st.text_input("Emri i Artikullit")
-        item_qty = st.number_input("Sasia", min_value=0, step=1)
-        item_price = st.number_input("Çmimi (€)", min_value=0.0, step=0.1)
+        item_qty = st.number_input("Sasia", min_value=0)
+        item_price = st.number_input("Çmimi (€)", min_value=0.0)
         submitted = st.form_submit_button("Shto Artikullin")
 
-        if submitted:
-            new_data = pd.DataFrame([[item_name, item_qty, item_price]], columns=["Emri i Artikullit", "Sasia", "Çmimi"])
+        if submitted and item_name:
+            new_data = pd.DataFrame([[item_category, item_name, item_qty, item_price]],
+                                    columns=["Kategori", "Emri i Artikullit", "Sasia", "Çmimi"])
             st.session_state['inventory'] = pd.concat([st.session_state['inventory'], new_data], ignore_index=True)
             st.success(f"Artikulli '{item_name}' u shtua në inventar!")
 
-    # Shfaq tabelën e inventarit aktual
+    # Shfaq tabelën e inventarit aktual dhe lejo përditësime/fshirje
     st.subheader("Inventari Aktual")
-    st.dataframe(st.session_state['inventory'])
+    for index, row in st.session_state['inventory'].iterrows():
+        with st.expander(f"{row['Emri i Artikullit']} - {row['Kategori']}"):
+            edit_qty = st.number_input(f"Sasia për {row['Emri i Artikullit']}", value=row['Sasia'], min_value=0)
+            edit_price = st.number_input(f"Çmimi për {row['Emri i Artikullit']} (€)", value=row['Çmimi'], min_value=0.0)
+            if st.button(f"Fshij {row['Emri i Artikullit']}", key=f"delete_{index}"):
+                st.session_state['inventory'].drop(index, inplace=True)
+                st.session_state['inventory'].reset_index(drop=True, inplace=True)
+                st.success(f"Artikulli '{row['Emri i Artikullit']}' u fshi nga inventari.")
+            if st.button(f"Përditëso {row['Emri i Artikullit']}", key=f"update_{index}"):
+                st.session_state['inventory'].at[index, 'Sasia'] = edit_qty
+                st.session_state['inventory'].at[index, 'Çmimi'] = edit_price
+                st.success(f"Artikulli '{row['Emri i Artikullit']}' u përditësua me sukses.")
 
 # Menaxhimi i Klientëve
 elif choice == "Menaxhimi i Klientëve":
