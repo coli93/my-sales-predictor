@@ -36,6 +36,42 @@ if choice == "Parashikimi i Shitjeve":
         st.pyplot(plt)
 
 # Menaxhimi i Inventarit
+import streamlit as st
+import pandas as pd
+import matplotlib.pyplot as plt
+from datetime import datetime, timedelta
+
+# Titulli kryesor i aplikacionit
+st.set_page_config(page_title="Biznesi Menaxhimi – All in One")
+st.title("Biznesi Menaxhimi - All in One")
+
+# Menuja për të zgjedhur seksionin
+menu = [
+    "Parashikimi i Shitjeve", 
+    "Menaxhimi i Inventarit", 
+    "Menaxhimi i Klientëve", 
+    "Raportet Financiare", 
+    "Menaxhimi i Punonjësve"
+]
+choice = st.sidebar.selectbox("Zgjidh një funksion:", menu)
+
+# Parashikimi i Shitjeve
+if choice == "Parashikimi i Shitjeve":
+    st.header("🔮 Parashikimi i Shitjeve")
+    st.write("Ky seksion ju ndihmon të parashikoni shitjet e ardhshme bazuar në të dhënat ekzistuese.")
+    months = st.number_input("Fut numrin e muajit (1-12):", min_value=1, max_value=12, step=1)
+    if st.button("Parashiko shitjet"):
+        sales = months * 2500 + 5000
+        st.success(f"Parashikimi për shitjet është: {sales:.2f} €")
+        x = list(range(1, months + 1))
+        y = [i * 2500 + 5000 for i in x]
+        plt.plot(x, y)
+        plt.xlabel("Muajt")
+        plt.ylabel("Shitjet (€)")
+        plt.title("Parashikimi i Shitjeve")
+        st.pyplot(plt)
+
+# Menaxhimi i Inventarit
 elif choice == "Menaxhimi i Inventarit":
     st.header("📦 Menaxhimi i Inventarit")
     st.write("Shto, menaxho dhe përditëso inventarin e biznesit tuaj.")
@@ -65,7 +101,7 @@ elif choice == "Menaxhimi i Inventarit":
 
     # Kontrollo produktet afër skadimit dhe lajmëro përdoruesin
     st.subheader("Produktet Afër Skadimit")
-    if 'inventory' in st.session_state:
+    try:
         expiring_soon = st.session_state['inventory'][
             (st.session_state['inventory']["Data e Skadencës"].notnull()) &
             (st.session_state['inventory']["Data e Skadencës"] <= datetime.now() + timedelta(days=7))
@@ -75,6 +111,15 @@ elif choice == "Menaxhimi i Inventarit":
             st.dataframe(expiring_soon)
         else:
             st.info("Asnjë produkt nuk është afër skadimit.")
+    except Exception as e:
+        st.error(f"Gabim gjatë përpunimit: {e}")
+
+    # Opsioni për të fshirë një produkt nga inventari
+    st.subheader("Fshi një Produkt")
+    product_to_delete = st.selectbox("Zgjidh një produkt për të fshirë:", st.session_state['inventory']["Emri i Produktit"].unique())
+    if st.button("Fshi Produktin"):
+        st.session_state['inventory'] = st.session_state['inventory'][st.session_state['inventory']["Emri i Produktit"] != product_to_delete]
+        st.success(f"Artikulli '{product_to_delete}' u fshi nga inventari.")
 
 # Menaxhimi i Klientëve
 elif choice == "Menaxhimi i Klientëve":
