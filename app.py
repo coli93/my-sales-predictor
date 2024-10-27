@@ -75,14 +75,22 @@ elif choice == "Menaxhimi i Klientëve":
     st.dataframe(st.session_state['clients'])
 
 # Raportet Financiare
+import matplotlib.pyplot as plt
+
+# ...
+
+# Raportet Financiare
 elif choice == "Raportet Financiare":
     st.header("💰 Raportet Financiare")
     st.write("Gjenero dhe analizoni raportet financiare të biznesit tuaj.")
-    
-    income = st.number_input("Të ardhurat mujore (€)", min_value=0.0, format="%.2f")
-    expenses = st.number_input("Shpenzimet mujore (€)", min_value=0.0, format="%.2f")
-    
-    if st.button("Gjenero Raportin"):
+
+    # Shto inputet për të ardhurat dhe shpenzimet
+    income = st.number_input("Të ardhurat mujore (€)", min_value=0.00, value=0.00, step=10.00)
+    expenses = st.number_input("Shpenzimet mujore (€)", min_value=0.00, value=0.00, step=10.00)
+    submitted_report = st.button("Gjenero Raportin")
+
+    if submitted_report:
+        # Kalkulo fitimin
         profit = income - expenses
         st.subheader("Raporti Financiar")
         st.write(f"Të ardhurat mujore: €{income:.2f}")
@@ -94,7 +102,19 @@ elif choice == "Raportet Financiare":
         elif profit < 0:
             st.error("Biznesi është në humbje!")
         else:
-            st.info("Biznesi është në balancë.")
+            st.warning("Biznesi është në ekuilibër!")
+
+        # Vizualizim me grafikë
+        months = ["Janar", "Shkurt", "Mars", "Prill", "Maj", "Qershor", "Korrik", "Gusht", "Shtator", "Tetor", "Nëntor", "Dhjetor"]
+        profits = [profit] * 12  # Për shembull, duke treguar të njëjtin fitim për çdo muaj për thjeshtësi.
+
+        fig, ax = plt.subplots()
+        ax.plot(months, profits, marker='o')
+        ax.set_title("Fitimi Mujore gjatë Vitit")
+        ax.set_xlabel("Muajt")
+        ax.set_ylabel("Fitimi (€)")
+        ax.grid(True)
+        st.pyplot(fig)
 
 # Menaxhimi i Punonjësve
 elif choice == "Menaxhimi i Punonjësve":
