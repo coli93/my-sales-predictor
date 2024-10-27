@@ -33,25 +33,8 @@ menu = [
 ]
 choice = st.sidebar.selectbox("Zgjidh një funksion:", menu)
 
-# Parashikimi i Shitjeve
-if choice == "Parashikimi i Shitjeve":
-    st.header("🔮 Parashikimi i Shitjeve")
-    st.write("Ky seksion ju ndihmon të parashikoni shitjet e ardhshme bazuar në të dhënat ekzistuese.")
-    months = st.number_input("Fut numrin e muajit (1-12):", min_value=1, max_value=12, step=1)
-    if st.button("Parashiko shitjet"):
-        sales = months * 2500 + 5000
-        st.success(f"Parashikimi për shitjet është: {sales:.2f} €")
-        # Grafiku
-        x = list(range(1, months + 1))
-        y = [i * 2500 + 5000 for i in x]
-        plt.plot(x, y)
-        plt.xlabel("Muajt")
-        plt.ylabel("Shitjet (€)")
-        plt.title("Parashikimi i Shitjeve")
-        st.pyplot(plt)
-
 # Menaxhimi i Inventarit
-elif choice == "Menaxhimi i Inventarit":
+if choice == "Menaxhimi i Inventarit":
     st.header("📦 Menaxhimi i Inventarit")
     st.write("Shto, menaxho dhe përditëso inventarin e biznesit tuaj.")
     
@@ -84,18 +67,40 @@ elif choice == "Menaxhimi i Inventarit":
             st.session_state['inventory'].reset_index(drop=True, inplace=True)
             st.success("Artikulli u fshi me sukses!")
 
+    # Përditësimi i artikujve
+    st.subheader("Përditëso Artikullin")
+    if not inventory_df.empty:
+        update_index = st.selectbox("Zgjidh artikullin për përditësim:", inventory_df.index)
+        with st.form("update_item_form"):
+            updated_name = st.text_input("Emri i Produktit", inventory_df.at[update_index, "Emri i Produktit"])
+            updated_category = st.selectbox("Kategoria", ["Ushqim", "Pije", "Të Tjera"], index=["Ushqim", "Pije", "Të Tjera"].index(inventory_df.at[update_index, "Kategori"]))
+            updated_qty = st.number_input("Sasia", min_value=1, step=1, value=inventory_df.at[update_index, "Sasia"])
+            updated_price = st.number_input("Çmimi (€)", min_value=0.01, step=0.01, value=inventory_df.at[update_index, "Çmimi (€)"])
+            updated_expiry = st.date_input("Data e Skadencës (Opsionale)", value=inventory_df.at[update_index, "Data e Skadencës"] if pd.notnull(inventory_df.at[update_index, "Data e Skadencës"]) else None)
+            update_btn = st.form_submit_button("Përditëso Artikullin")
+            
+            if update_btn:
+                st.session_state['inventory'].at[update_index, "Emri i Produktit"] = updated_name
+                st.session_state['inventory'].at[update_index, "Kategori"] = updated_category
+                st.session_state['inventory'].at[update_index, "Sasia"] = updated_qty
+                st.session_state['inventory'].at[update_index, "Çmimi (€)"] = updated_price
+                st.session_state['inventory'].at[update_index, "Data e Skadencës"] = updated_expiry
+                st.success(f"Artikulli '{updated_name}' u përditësua me sukses!")
+
     # Kontrollo produktet afër skadimit dhe lajmëro përdoruesin
     st.subheader("Produktet Afër Skadimit")
-    expiring_soon = st.session_state['inventory'][
-        (st.session_state['inventory']["Data e Skadencës"].notnull()) &
-        (st.session_state['inventory']["Data e Skadencës"] <= datetime.now() + timedelta(days=7))
-    ]
-    if not expiring_soon.empty:
-        st.warning("Këto produkte do të skadojnë së shpejti:")
-        st.dataframe(expiring_soon)
-    else:
-        st.info("Asnjë produkt nuk është afër skadimit.")
-
+    try:
+        expiring_soon = st.session_state['inventory'][
+            (st.session_state['inventory']["Data e Skadencës"].notnull()) &
+            (st.session_state['inventory']["Data e Skadencës"] <= datetime.now() + timedelta(days=7))
+        ]
+        if not expiring_soon.empty:
+            st.warning("Këto produkte do të skadojnë së shpejti:")
+            st.dataframe(expiring_soon)
+        else:
+            st.info("Asnjë produkt nuk është afër skadimit.")
+    except Exception as e:
+        st.error(f"Gabim gjatë përpunimit të skadencave: {e}")
 # Menaxhimi i Klientëve
 elif choice == "Menaxhimi i Klientëve":
     st.header("👥 Menaxhimi i Klientëve")
