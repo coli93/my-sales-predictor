@@ -14,7 +14,36 @@ choice = st.sidebar.selectbox("Zgjidh një funksion:", menu)
 if choice == "Parashikimi i Shitjeve":
     st.header("🔮 Parashikimi i Shitjeve")
     st.write("Ky seksion ju ndihmon të parashikoni shitjet mujore bazuar në të dhënat ekzistuese.")
-    
+    import numpy as np
+from sklearn.linear_model import LinearRegression
+
+# Funksioni për Parashikimin e Shitjeve
+def parashiko_shitjet():
+    st.header("🔮 Parashikimi i Shitjeve")
+    st.write("Ky seksion ju ndihmon të parashikoni shitjet mujore për biznesin tuaj bazuar në të dhënat ekzistuese.")
+
+    # Të dhënat shembull për modelin e parashikimit
+    data = pd.DataFrame({
+        'Month_Num': range(1, 13),
+        'Sales': [24000, 25000, 26000, 25500, 27000, 29000, 30000, 31000, 32000, 33000, 34000, 35500]
+    })
+
+    # Krijo modelin e regresionit linear
+    X = np.array(data['Month_Num']).reshape(-1, 1)
+    y = np.array(data['Sales'])
+    model = LinearRegression()
+    model.fit(X, y)
+
+    # Form për të zgjedhur muajin për parashikim
+    selected_month = st.number_input("Fut numrin e muajit (1-12):", min_value=1, max_value=12, step=1)
+
+    if st.button("Parashiko shitjet"):
+        # Parashiko shitjet për muajin e zgjedhur
+        predicted_sales = model.predict(np.array([[selected_month]]))[0]
+        st.success(f"Parashikimi për shitjet është: {predicted_sales:.2f}")
+
+    # Shfaq grafik të dhënat dhe parashikimet
+    st.line_chart(data.set_index('Month_Num'))
     # Parashikimi i shitjeve do të shtohet më vonë kur të kompletojmë pjesën e funksionaliteteve.
 
 # Menaxhimi i Inventarit
