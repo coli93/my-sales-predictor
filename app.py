@@ -101,6 +101,7 @@ if choice == "Menaxhimi i Inventarit":
             st.info("Asnjë produkt nuk është afër skadimit.")
     except Exception as e:
         st.error(f"Gabim gjatë përpunimit të skadencave: {e}")
+        
 # Menaxhimi i Klientëve
 elif choice == "Menaxhimi i Klientëve":
     st.header("👥 Menaxhimi i Klientëve")
