@@ -23,6 +23,31 @@ y = data['Sales']
 model = LinearRegression()
 model.fit(X, y)
 
+# Funksion për parashikimin
+def predict_sales(month_num):
+    month = (datetime(2023, month_num, 1)).month
+    season = (month % 12 + 3) // 3
+    X_new = np.array([[month_num, month, season]])
+    prediction = model.predict(X_new)
+    return prediction[0]
+
+# Titulli dhe përshkrimi
+st.title("📈 Parashikuesi i Shitjeve për Bizneset")
+st.write("Ky aplikacion ndihmon në parashikimin e shitjeve mujore për bizneset bazuar në të dhënat ekzistuese.")
+
+# Input nga përdoruesi
+month_num = st.number_input("Fut numrin e muajit (1-12):", min_value=1, max_value=12, step=1)
+
+if st.button("🔮 Parashiko shitjet"):
+    prediction = predict_sales(month_num)
+    st.success(f"Parashikimi për shitjet është: {prediction:.2f}")
+
+    # Grafikë
+    st.line_chart(data['Sales'])
+
+# Informacion shtesë për përdoruesin
+st.info("Ju lutem futni një numër muaji nga 1 deri në 12 për të parë parashikimin e shitjeve.")
+
 # Titulli i aplikacionit
 st.title("Parashikuesi i Shitjeve për Bizneset")
 
