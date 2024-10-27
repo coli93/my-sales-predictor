@@ -3,8 +3,10 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
 
-# Titulli kryesor i aplikacionit
+# Vendosja e konfigurimit të faqes (e para)
 st.set_page_config(page_title="Biznesi Menaxhimi – All in One")
+
+# Titulli kryesor i aplikacionit
 st.title("Biznesi Menaxhimi - All in One")
 
 # Menuja për të zgjedhur seksionin
@@ -27,42 +29,6 @@ if choice == "Parashikimi i Shitjeve":
         sales = months * 2500 + 5000
         st.success(f"Parashikimi për shitjet është: {sales:.2f} €")
         # Grafiku
-        x = list(range(1, months + 1))
-        y = [i * 2500 + 5000 for i in x]
-        plt.plot(x, y)
-        plt.xlabel("Muajt")
-        plt.ylabel("Shitjet (€)")
-        plt.title("Parashikimi i Shitjeve")
-        st.pyplot(plt)
-
-# Menaxhimi i Inventarit
-import streamlit as st
-import pandas as pd
-import matplotlib.pyplot as plt
-from datetime import datetime, timedelta
-
-# Titulli kryesor i aplikacionit
-st.set_page_config(page_title="Biznesi Menaxhimi – All in One")
-st.title("Biznesi Menaxhimi - All in One")
-
-# Menuja për të zgjedhur seksionin
-menu = [
-    "Parashikimi i Shitjeve", 
-    "Menaxhimi i Inventarit", 
-    "Menaxhimi i Klientëve", 
-    "Raportet Financiare", 
-    "Menaxhimi i Punonjësve"
-]
-choice = st.sidebar.selectbox("Zgjidh një funksion:", menu)
-
-# Parashikimi i Shitjeve
-if choice == "Parashikimi i Shitjeve":
-    st.header("🔮 Parashikimi i Shitjeve")
-    st.write("Ky seksion ju ndihmon të parashikoni shitjet e ardhshme bazuar në të dhënat ekzistuese.")
-    months = st.number_input("Fut numrin e muajit (1-12):", min_value=1, max_value=12, step=1)
-    if st.button("Parashiko shitjet"):
-        sales = months * 2500 + 5000
-        st.success(f"Parashikimi për shitjet është: {sales:.2f} €")
         x = list(range(1, months + 1))
         y = [i * 2500 + 5000 for i in x]
         plt.plot(x, y)
@@ -103,34 +69,22 @@ elif choice == "Menaxhimi i Inventarit":
     st.subheader("Produktet Afër Skadimit")
     if 'inventory' in st.session_state:
         expiring_soon = st.session_state['inventory'][
-            (st.session_state['inventory']["Data e Skadencës"].notnull()) & # Sigurohu që data ekziston
-            (pd.to_datetime(st.session_state['inventory']["Data e Skadencës"]) <= datetime.now() + timedelta(days=7))
+            (st.session_state['inventory']["Data e Skadencës"].notnull()) &
+            (st.session_state['inventory']["Data e Skadencës"] <= datetime.now() + timedelta(days=7))
         ]
         if not expiring_soon.empty:
             st.warning("Këto produkte do të skadojnë së shpejti:")
             st.dataframe(expiring_soon)
         else:
             st.info("Asnjë produkt nuk është afër skadimit.")
-
-    # Menaxho dhe fshi artikujt ekzistues
-    st.subheader("Menaxho Artikujt")
-    product_list = st.session_state['inventory']["Emri i Produktit"].tolist()
-    selected_product = st.selectbox("Zgjidh një produkt për të menaxhuar:", product_list)
-
-    if selected_product:
-        selected_row = st.session_state['inventory'][st.session_state['inventory']["Emri i Produktit"] == selected_product]
-        if not selected_row.empty:
-            st.write(f"**{selected_product} - {selected_row.iloc[0]['Kategori']}**")
-            new_qty = st.number_input(f"Sasia për {selected_product}", min_value=0, value=int(selected_row.iloc[0]["Sasia"]))
-            new_price = st.number_input(f"Çmimi për {selected_product} (€)", min_value=0.00, value=float(selected_row.iloc[0]["Çmimi (€)"]))
-            if st.button("Përditëso"):
-                st.session_state['inventory'].loc[st.session_state['inventory']["Emri i Produktit"] == selected_product, "Sasia"] = new_qty
-                st.session_state['inventory'].loc[st.session_state['inventory']["Emri i Produktit"] == selected_product, "Çmimi (€)"] = new_price
-                st.success(f"Artikulli '{selected_product}' u përditësua me sukses!")
-
-            if st.button("Fshij"):
-                st.session_state['inventory'] = st.session_state['inventory'][st.session_state['inventory']["Emri i Produktit"] != selected_product]
-                st.success(f"Artikulli '{selected_product}' u fshi nga inventari!")
+    
+    # Opsion për të fshirë produktet nga inventari
+    st.subheader("Fshij një Produkt")
+    if not st.session_state['inventory'].empty:
+        product_to_delete = st.selectbox("Zgjidh produktin për të fshirë:", st.session_state['inventory']["Emri i Produktit"].unique())
+        if st.button("Fshij Produktin"):
+            st.session_state['inventory'] = st.session_state['inventory'][st.session_state['inventory']["Emri i Produktit"] != product_to_delete]
+            st.success(f"Produkti '{product_to_delete}' u fshi nga inventari!")
 
 # Menaxhimi i Klientëve
 elif choice == "Menaxhimi i Klientëve":
