@@ -63,18 +63,26 @@ elif choice == "Menaxhimi i Inventarit":
     st.subheader("Inventari Aktual")
     st.dataframe(st.session_state['inventory'])
 
-    # Kontrollo produktet afër skadimit dhe lajmëro përdoruesin
-    st.subheader("Produktet Afër Skadimit")
-    if 'inventory' in st.session_state:
-        expiring_soon = st.session_state['inventory'][
-            (st.session_state['inventory']["Data e Skadencës"].notnull()) &
-            (st.session_state['inventory']["Data e Skadencës"] <= datetime.now() + timedelta(days=7))
-        ]
-        if not expiring_soon.empty:
-            st.warning("Këto produkte do të skadojnë së shpejti:")
-            st.dataframe(expiring_soon)
-        else:
-            st.info("Asnjë produkt nuk është afër skadimit.")
+  from datetime import datetime
+
+# Kontrollo produktet afër skadimit
+if 'inventory' in st.session_state:
+    current_date = datetime.now().date()
+    near_expiry = []
+
+    for idx, row in st.session_state['inventory'].iterrows():
+        try:
+            expiry_date = datetime.strptime(row['Skadenca'], '%Y-%m-%d').date()
+            if expiry_date <= current_date:
+                near_expiry.append(row)
+        except Exception as e:
+            st.error(f"Gabim në përpunimin e datës për produktin {row['Emri']}: {e}")
+
+    if near_expiry:
+        st.warning("Produkte afër skadimit ose të skaduara:")
+        st.write(pd.DataFrame(near_expiry))
+    else:
+        st.success("Nuk ka produkte afër skadimit.")
 
 # Menaxhimi i Klientëve
 elif choice == "Menaxhimi i Klientëve":
