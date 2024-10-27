@@ -1,9 +1,3 @@
-import streamlit as st
-import pandas as pd
-import matplotlib.pyplot as plt
-from datetime import datetime, timedelta
-
-# Vendosja e konfigurimit të faqes (e para)
 st.set_page_config(page_title="Biznesi Menaxhimi – All in One")
 
 # Titulli kryesor i aplikacionit
