@@ -72,7 +72,30 @@ elif choice == "Menaxhimi i Klientëve":
 elif choice == "Raportet Financiare":
     st.header("💰 Raportet Financiare")
     st.write("Gjenero dhe analizoni raportet financiare të biznesit tuaj.")
+    # Logjikë për Raportet Financiare
+elif choice == "Raportet Financiare":
+    st.header("💵 Raportet Financiare")
+    st.write("Gjenero dhe analizo raporte financiare për biznesin tuaj.")
     
+    # Form për të futur të ardhurat dhe shpenzimet
+    with st.form("finance_report_form"):
+        revenue = st.number_input("Të ardhurat mujore (€)", min_value=0.0, step=0.01)
+        expenses = st.number_input("Shpenzimet mujore (€)", min_value=0.0, step=0.01)
+        finance_submitted = st.form_submit_button("Gjenero Raportin")
+
+    if finance_submitted:
+        profit = revenue - expenses
+        st.subheader("Raporti Financiar")
+        st.write(f"Të ardhurat mujore: €{revenue:.2f}")
+        st.write(f"Shpenzimet mujore: €{expenses:.2f}")
+        st.write(f"Fitimi: €{profit:.2f}")
+
+        if profit > 0:
+            st.success("Biznesi është në fitim!")
+        elif profit < 0:
+            st.error("Biznesi është në humbje!")
+        else:
+            st.info("Biznesi është në barazim!")
     # Shto logjikë për raportet financiare këtu...
 
 # Menaxhimi i Punonjësve
