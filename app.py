@@ -47,23 +47,3 @@ if st.button("🔮 Parashiko shitjet"):
 
 # Informacion shtesë për përdoruesin
 st.info("Ju lutem futni një numër muaji nga 1 deri në 12 për të parë parashikimin e shitjeve.")
-
-# Titulli i aplikacionit
-st.title("Parashikuesi i Shitjeve për Bizneset")
-
-# Kërko muajin, sezonin dhe numrin e muajit
-month_num = st.number_input("Fut numrin e muajit (1-12):", min_value=1, max_value=12, step=1)
-season = (month_num % 12 + 3) // 3  # Llogarit sezonin automatikisht
-
-# Parashiko shitjet
-if st.button("Parashiko shitjet"):
-    future_data = pd.DataFrame({
-        'Month_Num': [len(data) + 1],
-        'Month': [month_num],
-        'Season': [season]
-    })
-    prediction = model.predict(future_data)[0]
-    st.write(f"Parashikimi për shitjet është: {prediction:.2f}")
-
-# Grafika e të dhënave
-st.line_chart(data.set_index('Month_Num')['Sales'])
