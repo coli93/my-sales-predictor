@@ -101,25 +101,36 @@ elif choice == "Menaxhimi i Inventarit":
 
     # Kontrollo produktet afër skadimit dhe lajmëro përdoruesin
     st.subheader("Produktet Afër Skadimit")
-    try:
+    if 'inventory' in st.session_state:
         expiring_soon = st.session_state['inventory'][
-            (st.session_state['inventory']["Data e Skadencës"].notnull()) &
-            (st.session_state['inventory']["Data e Skadencës"] <= datetime.now() + timedelta(days=7))
+            (st.session_state['inventory']["Data e Skadencës"].notnull()) & # Sigurohu që data ekziston
+            (pd.to_datetime(st.session_state['inventory']["Data e Skadencës"]) <= datetime.now() + timedelta(days=7))
         ]
         if not expiring_soon.empty:
             st.warning("Këto produkte do të skadojnë së shpejti:")
             st.dataframe(expiring_soon)
         else:
             st.info("Asnjë produkt nuk është afër skadimit.")
-    except Exception as e:
-        st.error(f"Gabim gjatë përpunimit: {e}")
 
-    # Opsioni për të fshirë një produkt nga inventari
-    st.subheader("Fshi një Produkt")
-    product_to_delete = st.selectbox("Zgjidh një produkt për të fshirë:", st.session_state['inventory']["Emri i Produktit"].unique())
-    if st.button("Fshi Produktin"):
-        st.session_state['inventory'] = st.session_state['inventory'][st.session_state['inventory']["Emri i Produktit"] != product_to_delete]
-        st.success(f"Artikulli '{product_to_delete}' u fshi nga inventari.")
+    # Menaxho dhe fshi artikujt ekzistues
+    st.subheader("Menaxho Artikujt")
+    product_list = st.session_state['inventory']["Emri i Produktit"].tolist()
+    selected_product = st.selectbox("Zgjidh një produkt për të menaxhuar:", product_list)
+
+    if selected_product:
+        selected_row = st.session_state['inventory'][st.session_state['inventory']["Emri i Produktit"] == selected_product]
+        if not selected_row.empty:
+            st.write(f"**{selected_product} - {selected_row.iloc[0]['Kategori']}**")
+            new_qty = st.number_input(f"Sasia për {selected_product}", min_value=0, value=int(selected_row.iloc[0]["Sasia"]))
+            new_price = st.number_input(f"Çmimi për {selected_product} (€)", min_value=0.00, value=float(selected_row.iloc[0]["Çmimi (€)"]))
+            if st.button("Përditëso"):
+                st.session_state['inventory'].loc[st.session_state['inventory']["Emri i Produktit"] == selected_product, "Sasia"] = new_qty
+                st.session_state['inventory'].loc[st.session_state['inventory']["Emri i Produktit"] == selected_product, "Çmimi (€)"] = new_price
+                st.success(f"Artikulli '{selected_product}' u përditësua me sukses!")
+
+            if st.button("Fshij"):
+                st.session_state['inventory'] = st.session_state['inventory'][st.session_state['inventory']["Emri i Produktit"] != selected_product]
+                st.success(f"Artikulli '{selected_product}' u fshi nga inventari!")
 
 # Menaxhimi i Klientëve
 elif choice == "Menaxhimi i Klientëve":
