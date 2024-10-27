@@ -3,6 +3,20 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
 
+# Shto një stil të personalizuar për të zgjeruar tabelat
+st.markdown(
+    """
+    <style>
+    .reportview-container .main .block-container {
+        max-width: 90%;
+        padding-left: 5%;
+        padding-right: 5%;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
 # Titulli kryesor i aplikacionit
 st.set_page_config(page_title="Biznesi Menaxhimi – All in One")
 st.title("Biznesi Menaxhimi - All in One")
