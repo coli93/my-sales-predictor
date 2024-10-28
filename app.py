@@ -10,7 +10,6 @@ st.set_page_config(page_title="Platforma Inteligjente e Menaxhimit të Biznesit"
 
 # Funksioni i autentifikimit
 def authenticate(username, password):
-    # Përdoruesit mund të ruhen në një bazë të dhënash në praktikë
     return username == "admin" and password == "admin"
 
 # Funksioni për login
@@ -26,6 +25,7 @@ def login():
             if authenticate(username, password):
                 st.session_state['authenticated'] = True
                 st.success("Login i suksesshëm!")
+                st.experimental_rerun()  # Rifreskon faqen për të kaluar në menunë kryesore
             else:
                 st.error("Përdorues ose fjalëkalim i pasaktë!")
 
