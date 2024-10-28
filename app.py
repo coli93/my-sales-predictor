@@ -27,35 +27,35 @@ if not st.session_state['authenticated']:
         else:
             st.error("Email ose Password i pasaktë!")
 else:
-# Përcakto konfigurimin e faqes vetëm një herë
-st.set_page_config(page_title="Menagjimi i Biznesit", layout="centered")
+    # Përcakto konfigurimin e faqes vetëm një herë
+    st.set_page_config(page_title="Menagjimi i Biznesit", layout="centered")
 
-# Shto një stil të personalizuar për të rregulluar pamjen e aplikacionit
-st.markdown(
-    """
-    <style>
-    .reportview-container .main .block-container{
-        max-width: 90%;
-        padding-left: 5%;
-        padding-right: 5%;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
+    # Shto një stil të personalizuar për të rregulluar pamjen e aplikacionit
+    st.markdown(
+        """
+        <style>
+        .reportview-container .main .block-container{
+            max-width: 90%;
+            padding-left: 5%;
+            padding-right: 5%;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
 
-# Titulli kryesor i aplikacionit
-st.title("Menagjimi i Biznesit")
+    # Titulli kryesor i aplikacionit
+    st.title("Menagjimi i Biznesit")
 
-# Menuja për të zgjedhur seksionin
-menu = [
-    "Parashikimi i Shitjeve", 
-    "Menaxhimi i Inventarit", 
-    "Menaxhimi i Klientëve", 
-    "Raportet Financiare", 
-    "Menaxhimi i Punonjësve"
-]
-choice = st.sidebar.selectbox("Zgjidh një funksion:", menu)
+    # Menuja për të zgjedhur seksionin
+    menu = [
+        "Parashikimi i Shitjeve", 
+        "Menaxhimi i Inventarit", 
+        "Menaxhimi i Klientëve", 
+        "Raportet Financiare", 
+        "Menaxhimi i Punonjësve"
+    ]
+    choice = st.sidebar.selectbox("Zgjidh një funksion:", menu)
 
 # Parashikimi i Shitjeve
 if choice == "Parashikimi i Shitjeve":
