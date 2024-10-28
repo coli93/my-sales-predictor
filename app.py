@@ -139,7 +139,7 @@ if not inventory_df.empty:
             st.session_state['inventory'].iloc[item_to_update - 1, st.session_state['inventory'].columns.get_loc("Çmimi (€)")] = item_price
             st.session_state['inventory'].iloc[item_to_update - 1, st.session_state['inventory'].columns.get_loc("Data e Skadencës")] = item_expiry
             st.success("Artikulli u përditësua me sukses!")
-            st.experimental_rerun()  # Rifresko faqen për të përditësuar pamjen
+            st.experimental_rerun()
 
     elif choice == "Menaxhimi i Klientëve":
         st.header("👥 Menaxhimi i Klientëve")
