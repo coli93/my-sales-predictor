@@ -3,6 +3,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
 
+# Vendosja e konfigurimit të faqes në fillim
+st.set_page_config(page_title="Menagjimi i Biznesit", layout="centered")
+
 # Funksioni për autentifikim
 def authenticate(username, password):
     return username == "admin" and password == "admin"
