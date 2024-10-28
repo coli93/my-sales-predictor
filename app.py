@@ -24,44 +24,6 @@ if not st.session_state['authenticated']:
         else:
             st.error("Email ose Password i pasaktë!")
 else:
-    # Përcakto konfigurimin e faqes vetëm një herë
-    st.set_page_config(page_title="Biznesi Menaxhimi - All in One", layout="centered")
-
-    # Shto një stil të personalizuar për të rregulluar pamjen e aplikacionit
-    st.markdown(
-        """
-        <style>
-        .reportview-container .main .block-container{
-            max-width: 90%;
-            padding-left: 5%;
-            padding-right: 5%;
-        }
-        </style>
-        """,
-        unsafe_allow_html=True
-    )
-
-    # Titulli kryesor i aplikacionit
-    st.title("Biznesi Menaxhimi - All in One")
-
-    # Menuja për të zgjedhur seksionin
-    menu = [
-        "Parashikimi i Shitjeve", 
-        "Menaxhimi i Inventarit", 
-        "Menaxhimi i Klientëve", 
-        "Raportet Financiare", 
-        "Menaxhimi i Punonjësve"
-    ]
-    choice = st.sidebar.selectbox("Zgjidh një funksion:", menu)
-
-    # Këtu vendosni pjesën tjetër të kodit që keni
-    # ...
-
-import streamlit as st
-import pandas as pd
-import matplotlib.pyplot as plt
-from datetime import datetime, timedelta
-
 # Përcakto konfigurimin e faqes vetëm një herë
 st.set_page_config(page_title="Menagjimi i Biznesit", layout="centered")
 
