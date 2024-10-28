@@ -16,7 +16,7 @@ if 'authenticated' not in st.session_state:
 
 # Nëse përdoruesi nuk është autentifikuar, shfaq faqen e login-it
 if not st.session_state['authenticated']:
-    st.title("Biznesi Menaxhimi - Login")
+    st.title("Soher - Login")
     username = st.text_input("Email")
     password = st.text_input("Password", type="password")
     if st.button("Login"):
@@ -54,7 +54,7 @@ else:
 
     # Kontrollimi i secilit zgjedhje duke përdorur një bllok `if` dhe `elif`
     if choice == "Parashikimi i Shitjeve":
-        st.header("🔮 Parashikimi i Shitjeve")
+        st.header("💹 Parashikimi i Shitjeve")
         months = st.number_input("Fut numrin e muajit (1-12):", min_value=1, max_value=12, step=1)
         if st.button("Parashiko shitjet"):
             sales = months * 2500 + 5000
