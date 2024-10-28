@@ -119,7 +119,7 @@ else:
         except Exception as e:
             st.error(f"Gabim gjatë përpunimit të skadencave: {e}")
 
-        # Përditësimi i artikullit
+# Përditësimi i artikullit
 st.header("🛠 Përditëso Artikullin")
 if not inventory_df.empty:
     item_to_update = st.selectbox("Zgjidh artikullin për përditësim:", inventory_df.index, format_func=lambda x: inventory_df.at[x, "Emri i Produktit"])
