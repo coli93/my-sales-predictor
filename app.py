@@ -17,15 +17,14 @@ def login():
     if 'authenticated' not in st.session_state:
         st.session_state['authenticated'] = False
 
+    # Vetëm shfaq login nëse përdoruesi nuk është autentifikuar
     if not st.session_state['authenticated']:
         st.title("Platforma Inteligjente e Menaxhimit të Biznesit")
         username = st.text_input("Përdoruesi")
         password = st.text_input("Fjalëkalimi", type="password")
         if st.button("Login"):
             if authenticate(username, password):
-                st.session_state['authenticated'] = True
-                st.success("Login i suksesshëm!")
-                st.experimental_rerun()  # Rifreskon faqen për të kaluar në menunë kryesore
+                st.session_state['authenticated'] = True  # Ndryshon gjendjen e login-it
             else:
                 st.error("Përdorues ose fjalëkalim i pasaktë!")
 
@@ -138,7 +137,7 @@ def financial_reports():
 # Funksioni kryesor për aplikacionin
 def main():
     login()
-    if st.session_state['authenticated']:
+    if st.session_state.get('authenticated', False):  # Vetëm vazhdon nëse përdoruesi është autentifikuar
         st.sidebar.title("Menuja e Biznesit Inteligjent")
         modules = {
             "Parashikimi i Shitjeve": sales_forecast,
