@@ -25,9 +25,15 @@ def login():
         if st.button("Login"):
             if authenticate(username, password):
                 st.session_state['authenticated'] = True  # Ndryshon gjendjen e login-it
-                st.experimental_rerun()  # Rifreskon për të kaluar te përmbajtja kryesore
+                st.experimental_set_query_params(auth="true")  # Përdorim parametra të kërkesës për të ruajtur gjendjen
             else:
                 st.error("Përdorues ose fjalëkalim i pasaktë!")
+
+# Funksion për të kontrolluar gjendjen e autentikimit pa rifreskim të faqes
+def check_authentication():
+    query_params = st.experimental_get_query_params()
+    if "auth" in query_params and query_params["auth"] == ["true"]:
+        st.session_state['authenticated'] = True
 
 # Moduli i Parashikimit Inteligjent të Shitjeve
 def sales_forecast():
@@ -137,7 +143,8 @@ def financial_reports():
 
 # Funksioni kryesor për aplikacionin
 def main():
-    login()
+    check_authentication()  # Kontrollo nëse përdoruesi është autentifikuar
+    login()  # Përdoruesi mund të bëjë login nëse nuk është autentifikuar
     if st.session_state.get('authenticated', False):  # Vetëm vazhdon nëse përdoruesi është autentifikuar
         st.sidebar.title("Menuja e Biznesit Inteligjent")
         modules = {
