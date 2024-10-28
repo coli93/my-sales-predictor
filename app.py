@@ -97,13 +97,99 @@ else:
     menu = [
         "Parashikimi i Shitjeve", 
         "Menaxhimi i Inventarit", 
+        "Menaxhimi i Klientëve", 
+        "Raportet Financiare", 
+        "Menaxhimi i Punonjësve",
         "Raportet e Performancës",
         "Dil"
     ]
     choice = st.sidebar.selectbox("Zgjidh një funksion:", menu)
 
-    # Parashikimi i Shitjeve, Menaxhimi i Inventarit dhe të tjera janë të njëjta si më parë...
-    
+    # Parashikimi i Shitjeve
+    if choice == "Parashikimi i Shitjeve":
+        st.header("🔮 Parashikimi i Shitjeve")
+        months = st.number_input("Fut numrin e muajit (1-12):", min_value=1, max_value=12, step=1)
+        if st.button("Parashiko shitjet"):
+            sales = months * 2500 + 5000
+            st.success(f"Parashikimi për shitjet është: {sales:.2f} €")
+            
+            # Grafiku i parashikimit
+            x = list(range(1, months + 1))
+            y = [i * 2500 + 5000 for i in x]
+            plt.figure(figsize=(10, 5))
+            plt.plot(x, y, marker='o', linestyle='-', color='b')
+            plt.xlabel("Muajt")
+            plt.ylabel("Shitjet (€)")
+            plt.title("Parashikimi i Shitjeve")
+            plt.grid(True)
+            st.pyplot(plt)
+
+    # Menaxhimi i Inventarit
+    elif choice == "Menaxhimi i Inventarit":
+        st.header("📦 Menaxhimi i Inventarit")
+        if 'inventory' not in st.session_state:
+            st.session_state['inventory'] = pd.DataFrame(columns=["Emri i Produktit", "Kategori", "Sasia", "Çmimi (€)", "Data e Skadencës"])
+        
+        # Shto artikuj të rinj në inventar
+        with st.form("add_item_form"):
+            item_name = st.text_input("Emri i Produktit")
+            item_category = st.selectbox("Kategoria", ["Ushqim", "Pije", "Të Tjera"])
+            item_qty = st.number_input("Sasia", min_value=1, step=1)
+            item_price = st.number_input("Çmimi (€)", min_value=0.01, step=0.01)
+            item_expiry = st.date_input("Data e Skadencës (Opsionale)", value=None)
+            submitted = st.form_submit_button("Shto Artikullin")
+
+            if submitted:
+                new_data = pd.DataFrame([[item_name, item_category, item_qty, item_price, item_expiry]],
+                                        columns=["Emri i Produktit", "Kategori", "Sasia", "Çmimi (€)", "Data e Skadencës"])
+                st.session_state['inventory'] = pd.concat([st.session_state['inventory'], new_data], ignore_index=True)
+                st.success(f"Artikulli '{item_name}' u shtua në inventar!")
+
+        st.subheader("Inventari Aktual")
+        inventory_df = st.session_state['inventory']
+        inventory_df.index = inventory_df.index + 1  # Fillon indeksi nga 1
+        st.dataframe(inventory_df)
+
+        if not inventory_df.empty:
+            selected_index = st.number_input("Indeksi për të fshirë:", min_value=1, max_value=len(inventory_df), step=1) - 1
+            if st.button("Fshi Artikullin"):
+                st.session_state['inventory'].drop(index=selected_index, inplace=True)
+                st.session_state['inventory'].reset_index(drop=True, inplace=True)
+                st.success("Artikulli u fshi me sukses!")
+
+        # Kontrollo produktet afër skadimit dhe lajmëro përdoruesin
+        st.subheader("Produktet Afër Skadimit")
+        try:
+            expiring_soon = st.session_state['inventory'][
+                (st.session_state['inventory']["Data e Skadencës"].notnull()) &
+                (pd.to_datetime(st.session_state['inventory']["Data e Skadencës"]) <= datetime.now() + timedelta(days=7))
+            ]
+            if not expiring_soon.empty:
+                expiring_soon.index = expiring_soon.index + 1  # Fillon indeksi nga 1
+                st.warning("Këto produkte do të skadojnë së shpejti:")
+                st.dataframe(expiring_soon)
+            else:
+                st.info("Asnjë produkt nuk është afër skadimit.")
+        except Exception as e:
+            st.error(f"Gabim gjatë përpunimit të skadencave: {e}")
+
+    # Raportet e Performancës
+    elif choice == "Raportet e Performancës":
+        st.header("📊 Raportet e Performancës")
+        st.write("Shfaq raportet ditore dhe mujore të performancës së punonjësve.")
+        if 'performance_log' in st.session_state:
+            st.subheader("Raporti Ditor")
+            today = datetime.now().date()
+            daily_report = st.session_state['performance_log'][st.session_state['performance_log']["Date"] == today]
+            daily_report.index = daily_report.index + 1  # Fillon indeksi nga 1
+            st.write(daily_report)
+
+            st.subheader("Raporti Mujor")
+            month_start = datetime.now().replace(day=1).date()
+            monthly_report = st.session_state['performance_log'][st.session_state['performance_log']["Date"] >= month_start]
+            monthly_report.index = monthly_report.index + 1  # Fillon indeksi nga 1
+            st.write(monthly_report)
+
     # Butoni për Daljen
     elif choice == "Dil":
         st.session_state['authenticated'] = False
