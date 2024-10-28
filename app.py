@@ -71,7 +71,10 @@ else:
     menu = [
         "Parashikimi i Shitjeve", 
         "Menaxhimi i Inventarit", 
-        "Raportet e Performancës",  # Shto seksionin e raporteve
+        "Menaxhimi i Klientëve", 
+        "Raportet Financiare", 
+        "Menaxhimi i Punonjësve",
+        "Raportet e Performancës",
         "Dil"
     ]
     choice = st.sidebar.selectbox("Zgjidh një funksion:", menu)
@@ -79,12 +82,7 @@ else:
     # Parashikimi i Shitjeve
     if choice == "Parashikimi i Shitjeve":
         st.header("🔮 Parashikimi i Shitjeve")
-        st.write("Ky seksion ju ndihmon të parashikoni shitjet e ardhshme bazuar në të dhënat ekzistuese.")
-        
-        # Fut numrin e muajve për parashikim
         months = st.number_input("Fut numrin e muajit (1-12):", min_value=1, max_value=12, step=1)
-        
-        # Butoni për të gjeneruar parashikimin e shitjeve
         if st.button("Parashiko shitjet"):
             sales = months * 2500 + 5000
             st.success(f"Parashikimi për shitjet është: {sales:.2f} €")
@@ -123,10 +121,11 @@ else:
 
         st.subheader("Inventari Aktual")
         inventory_df = st.session_state['inventory']
+        inventory_df.index = inventory_df.index + 1  # Fillon indeksi nga 1
         st.dataframe(inventory_df)
 
         if not inventory_df.empty:
-            selected_index = st.number_input("Indeksi për të fshirë:", min_value=0, max_value=len(inventory_df) - 1, step=1)
+            selected_index = st.number_input("Indeksi për të fshirë:", min_value=1, max_value=len(inventory_df), step=1) - 1
             if st.button("Fshi Artikullin"):
                 st.session_state['inventory'].drop(index=selected_index, inplace=True)
                 st.session_state['inventory'].reset_index(drop=True, inplace=True)
@@ -140,6 +139,7 @@ else:
                 (pd.to_datetime(st.session_state['inventory']["Data e Skadencës"]) <= datetime.now() + timedelta(days=7))
             ]
             if not expiring_soon.empty:
+                expiring_soon.index = expiring_soon.index + 1  # Fillon indeksi nga 1
                 st.warning("Këto produkte do të skadojnë së shpejti:")
                 st.dataframe(expiring_soon)
             else:
@@ -152,16 +152,16 @@ else:
         st.header("📊 Raportet e Performancës")
         st.write("Shfaq raportet ditore dhe mujore të performancës së punonjësve.")
         if 'performance_log' in st.session_state:
-            # Raporti ditor
             st.subheader("Raporti Ditor")
             today = datetime.now().date()
             daily_report = st.session_state['performance_log'][st.session_state['performance_log']["Date"] == today]
+            daily_report.index = daily_report.index + 1  # Fillon indeksi nga 1
             st.write(daily_report)
 
-            # Raporti mujor
             st.subheader("Raporti Mujor")
             month_start = datetime.now().replace(day=1).date()
             monthly_report = st.session_state['performance_log'][st.session_state['performance_log']["Date"] >= month_start]
+            monthly_report.index = monthly_report.index + 1  # Fillon indeksi nga 1
             st.write(monthly_report)
 
     # Butoni për Daljen
@@ -169,4 +169,5 @@ else:
         st.session_state['authenticated'] = False
         if st.session_state['username']:
             log_performance(st.session_state['username'], "logout")
+        st.session_state.clear()  # Pastron të gjithë sesionin
         st.experimental_rerun()
