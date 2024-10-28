@@ -25,6 +25,7 @@ def login():
         if st.button("Login"):
             if authenticate(username, password):
                 st.session_state['authenticated'] = True  # Ndryshon gjendjen e login-it
+                st.experimental_rerun()  # Rifreskon për të kaluar te përmbajtja kryesore
             else:
                 st.error("Përdorues ose fjalëkalim i pasaktë!")
 
