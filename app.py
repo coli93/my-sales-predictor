@@ -91,7 +91,8 @@ else:
                 st.success(f"Artikulli '{item_name}' u shtua në inventar!")
 
         st.subheader("Inventari Aktual")
-        inventory_df = st.session_state['inventory']
+        inventory_df = st.session_state['inventory'].copy()
+        inventory_df.index = range(1, len(inventory_df) + 1)  # Fillon numerimin nga 1
         st.dataframe(inventory_df)
 
         if not inventory_df.empty:
@@ -108,6 +109,7 @@ else:
                 (pd.to_datetime(st.session_state['inventory']["Data e Skadencës"]) <= datetime.now() + timedelta(days=7))
             ]
             if not expiring_soon.empty:
+                expiring_soon.index = range(1, len(expiring_soon) + 1)  # Fillon numerimin nga 1
                 st.warning("Këto produkte do të skadojnë së shpejti:")
                 st.dataframe(expiring_soon)
             else:
@@ -117,14 +119,14 @@ else:
 
         st.header("🛠 Përditëso Artikullin")
         if not inventory_df.empty:
-            item_to_update = st.selectbox("Zgjidh artikullin për përditësim:", inventory_df.index + 1, format_func=lambda x: inventory_df.at[x - 1, "Emri i Produktit"])
+            item_to_update = st.selectbox("Zgjidh artikullin për përditësim:", inventory_df.index, format_func=lambda x: inventory_df.at[x, "Emri i Produktit"])
             if st.button("Shfaq Formularin e Përditësimit"):
                 with st.form("update_item_form"):
-                    item_name = st.text_input("Emri i Produktit", inventory_df.at[item_to_update - 1, "Emri i Produktit"])
-                    item_category = st.selectbox("Kategoria", ["Ushqim", "Pije", "Të Tjera"], index=["Ushqim", "Pije", "Të Tjera"].index(inventory_df.at[item_to_update - 1, "Kategori"]))
-                    item_qty = st.number_input("Sasia", min_value=1, step=1, value=int(inventory_df.at[item_to_update - 1, "Sasia"]))
-                    item_price = st.number_input("Çmimi (€)", min_value=0.01, step=0.01, value=float(inventory_df.at[item_to_update - 1, "Çmimi (€)"]))
-                    item_expiry = st.date_input("Data e Skadencës (Opsionale)", value=pd.to_datetime(inventory_df.at[item_to_update - 1, "Data e Skadencës"]).date() if pd.notnull(inventory_df.at[item_to_update - 1, "Data e Skadencës"]) else None)
+                    item_name = st.text_input("Emri i Produktit", inventory_df.at[item_to_update, "Emri i Produktit"])
+                    item_category = st.selectbox("Kategoria", ["Ushqim", "Pije", "Të Tjera"], index=["Ushqim", "Pije", "Të Tjera"].index(inventory_df.at[item_to_update, "Kategori"]))
+                    item_qty = st.number_input("Sasia", min_value=1, step=1, value=int(inventory_df.at[item_to_update, "Sasia"]))
+                    item_price = st.number_input("Çmimi (€)", min_value=0.01, step=0.01, value=float(inventory_df.at[item_to_update, "Çmimi (€)"]))
+                    item_expiry = st.date_input("Data e Skadencës (Opsionale)", value=pd.to_datetime(inventory_df.at[item_to_update, "Data e Skadencës"]).date() if pd.notnull(inventory_df.at[item_to_update, "Data e Skadencës"]) else None)
                     update_submitted = st.form_submit_button("Përditëso Artikullin")
 
                     if update_submitted:
@@ -156,7 +158,8 @@ else:
                 st.success(f"Klienti '{client_name} {client_surname}' u shtua me sukses!")
         
         st.subheader("Lista e Klientëve")
-        clients_df = st.session_state['clients']
+        clients_df = st.session_state['clients'].copy()
+        clients_df.index = range(1, len(clients_df) + 1)  # Fillon numerimin nga 1
         st.dataframe(clients_df)
 
         if not clients_df.empty:
@@ -209,7 +212,8 @@ else:
                 st.success(f"Punonjësi '{employee_name} {employee_surname}' u shtua me sukses!")
         
         st.subheader("Lista e Punonjësve")
-        employees_df = st.session_state['employees']
+        employees_df = st.session_state['employees'].copy()
+        employees_df.index = range(1, len(employees_df) + 1)  # Fillon numerimin nga 1
         st.dataframe(employees_df)
 
         if not employees_df.empty:
