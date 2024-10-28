@@ -136,7 +136,7 @@ else:
                         st.session_state['inventory'].at[item_to_update-1, "Çmimi (€)"] = item_price
                         st.session_state['inventory'].at[item_to_update-1, "Data e Skadencës"] = item_expiry
                         st.success("Artikulli u përditësua me sukses!")
-                        st.experimental_rerun()  # Rifresko faqen për të përditësuar pamjen
+                        st.experimental_rerun()
 
     elif choice == "Menaxhimi i Klientëve":
         st.header("👥 Menaxhimi i Klientëve")
