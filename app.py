@@ -23,7 +23,7 @@ if not st.session_state['authenticated']:
         if authenticate(username, password):
             st.session_state['authenticated'] = True
             st.success("Login i suksesshëm!")
-            st.experimental_rerun()  # Vetëm këtë përdor për rifreskim
+            # Këtu hiqni përdorimin e `st.experimental_rerun()`
         else:
             st.error("Email ose Password i pasaktë!")
 else:
