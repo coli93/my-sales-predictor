@@ -22,8 +22,7 @@ if not st.session_state['authenticated']:
     if st.button("Login"):
         if authenticate(username, password):
             st.session_state['authenticated'] = True
-            st.success("Login i suksesshëm!")
-            # Këtu hiqni përdorimin e `st.experimental_rerun()`
+            st.success("Login i suksesshëm! Tani mund të zgjidhni funksionet në menunë anësore.")
         else:
             st.error("Email ose Password i pasaktë!")
 else:
