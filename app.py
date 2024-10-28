@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
 
 # Përcakto konfigurimin e faqes vetëm një herë
-st.set_page_config(page_title="Biznesi Menaxhimi - All in One", layout="centered")
+st.set_page_config(page_title="Menagjimi i Biznesit", layout="centered")
 
 # Shto një stil të personalizuar për të rregulluar pamjen e aplikacionit
 st.markdown(
@@ -21,7 +21,7 @@ st.markdown(
 )
 
 # Titulli kryesor i aplikacionit
-st.title("Biznesi Menaxhimi - All in One")
+st.title("Menagjimi i Biznesit")
 
 # Menuja për të zgjedhur seksionin
 menu = [
@@ -33,6 +33,30 @@ menu = [
 ]
 choice = st.sidebar.selectbox("Zgjidh një funksion:", menu)
 
+# Parashikimi i Shitjeve
+if choice == "Parashikimi i Shitjeve":
+    st.header("🔮 Parashikimi i Shitjeve")
+    st.write("Ky seksion ju ndihmon të parashikoni shitjet e ardhshme bazuar në të dhënat ekzistuese.")
+    
+    # Fut numrin e muajve për parashikim
+    months = st.number_input("Fut numrin e muajit (1-12):", min_value=1, max_value=12, step=1)
+    
+    # Butoni për të gjeneruar parashikimin e shitjeve
+    if st.button("Parashiko shitjet"):
+        sales = months * 2500 + 5000
+        st.success(f"Parashikimi për shitjet është: {sales:.2f} €")
+        
+        # Grafiku i parashikimit
+        x = list(range(1, months + 1))
+        y = [i * 2500 + 5000 for i in x]
+        plt.figure(figsize=(10, 5))
+        plt.plot(x, y, marker='o', linestyle='-', color='b')
+        plt.xlabel("Muajt")
+        plt.ylabel("Shitjet (€)")
+        plt.title("Parashikimi i Shitjeve")
+        plt.grid(True)
+        st.pyplot(plt)
+        
 # Menaxhimi i Inventarit
 if choice == "Menaxhimi i Inventarit":
     st.header("📦 Menaxhimi i Inventarit")
