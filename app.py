@@ -23,13 +23,11 @@ if not st.session_state['authenticated']:
         if authenticate(username, password):
             st.session_state['authenticated'] = True
             st.success("Login i suksesshëm!")
-            # Rifresko faqen manualisht duke i vendosur një flag në gjendjen e aplikacionit
             st.experimental_rerun()  # Vetëm këtë përdor për rifreskim
         else:
             st.error("Email ose Password i pasaktë!")
 else:
-    # Këtu vendosni pjesën kryesore të aplikacionit që shfaqet pas login-it
-    # Shto një stil të personalizuar për të rregulluar pamjen e aplikacionit
+    # Pjesa kryesore e aplikacionit pas autentifikimit
     st.markdown(
         """
         <style>
@@ -43,7 +41,6 @@ else:
         unsafe_allow_html=True
     )
 
-    # Titulli kryesor i aplikacionit
     st.title("Menagjimi i Biznesit")
 
     # Menuja për të zgjedhur seksionin
@@ -56,15 +53,9 @@ else:
     ]
     choice = st.sidebar.selectbox("Zgjidh një funksion:", menu)
 
-    # Parashikimi i Shitjeve
     if choice == "Parashikimi i Shitjeve":
         st.header("🔮 Parashikimi i Shitjeve")
-        st.write("Ky seksion ju ndihmon të parashikoni shitjet e ardhshme bazuar në të dhënat ekzistuese.")
-        
-        # Fut numrin e muajve për parashikim
         months = st.number_input("Fut numrin e muajit (1-12):", min_value=1, max_value=12, step=1)
-        
-        # Butoni për të gjeneruar parashikimin e shitjeve
         if st.button("Parashiko shitjet"):
             sales = months * 2500 + 5000
             st.success(f"Parashikimi për shitjet është: {sales:.2f} €")
@@ -80,11 +71,8 @@ else:
             plt.grid(True)
             st.pyplot(plt)
 
-    # Menaxhimi i Inventarit
     elif choice == "Menaxhimi i Inventarit":
         st.header("📦 Menaxhimi i Inventarit")
-        st.write("Shto, menaxho dhe përditëso inventarin e biznesit tuaj.")
-        
         if 'inventory' not in st.session_state:
             st.session_state['inventory'] = pd.DataFrame(columns=["Emri i Produktit", "Kategori", "Sasia", "Çmimi (€)", "Data e Skadencës"])
         
@@ -102,7 +90,6 @@ else:
                 st.session_state['inventory'] = pd.concat([st.session_state['inventory'], new_data], ignore_index=True)
                 st.success(f"Artikulli '{item_name}' u shtua në inventar!")
 
-        # Mundësia për të fshirë artikuj nga inventari
         st.subheader("Inventari Aktual")
         inventory_df = st.session_state['inventory']
         st.dataframe(inventory_df)
@@ -114,7 +101,6 @@ else:
                 st.session_state['inventory'].reset_index(drop=True, inplace=True)
                 st.success("Artikulli u fshi me sukses!")
 
-        # Kontrollo produktet afër skadimit dhe lajmëro përdoruesin
         st.subheader("Produktet Afër Skadimit")
         try:
             expiring_soon = st.session_state['inventory'][
@@ -129,7 +115,6 @@ else:
         except Exception as e:
             st.error(f"Gabim gjatë përpunimit të skadencave: {e}")
 
-        # Përditësimi i artikullit
         st.header("🛠 Përditëso Artikullin")
         if not inventory_df.empty:
             item_to_update = st.selectbox("Zgjidh artikullin për përditësim:", inventory_df.index, format_func=lambda x: inventory_df.at[x, "Emri i Produktit"])
