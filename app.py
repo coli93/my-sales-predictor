@@ -2,198 +2,189 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
-import os
 
-# Vendosja e konfigurimit të faqes në fillim
-st.set_page_config(page_title="Menagjimi i Biznesit", layout="centered")
+# Konfigurimi i faqes
+st.set_page_config(page_title="Biznes Menaxhimi", layout="centered")
 
 # Funksioni për autentifikim
 def authenticate(username, password):
-    users = {
-        "admin": {"password": "admin", "role": "shefi"},
-        "menaxheri": {"password": "menaxheri", "role": "menaxher"},
-        "arkatari": {"password": "arkatari", "role": "arkatar"},
-        "financa": {"password": "financa", "role": "financa"},
-        "marketingu": {"password": "marketingu", "role": "marketing"}
-    }
-    user = users.get(username)
-    if user and user["password"] == password:
-        return user["role"]
-    return None
+    return username == "admin" and password == "admin"
 
-# Funksioni për regjistrimin e hyrjes dhe daljes së përdoruesit
-def log_performance(username, action):
-    now = datetime.now()
-    if 'performance_log' not in st.session_state:
-        st.session_state['performance_log'] = pd.DataFrame(columns=["User", "Date", "Login Time", "Logout Time", "Duration (Hours)"])
-
-    if action == "login":
-        st.session_state['performance_log'] = pd.concat([
-            st.session_state['performance_log'],
-            pd.DataFrame([[username, now.date(), now, None, None]], columns=["User", "Date", "Login Time", "Logout Time", "Duration (Hours)"])
-        ], ignore_index=True)
-
-    elif action == "logout":
-        index = st.session_state['performance_log'][(st.session_state['performance_log']["User"] == username) & 
-                                                    (st.session_state['performance_log']["Logout Time"].isna())].index[-1]
-        login_time = st.session_state['performance_log'].at[index, "Login Time"]
-        duration = (now - login_time).total_seconds() / 3600
-        st.session_state['performance_log'].at[index, "Logout Time"] = now
-        st.session_state['performance_log'].at[index, "Duration (Hours)"] = round(duration, 2)
-        save_performance()
-
-# Funksion për të ruajtur performancën në një skedar CSV
-def save_performance():
-    if 'performance_log' in st.session_state:
-        st.session_state['performance_log'].to_csv("performance_log.csv", index=False)
-
-# Lexoni performancën nga CSV nëse ekziston
-def load_performance():
-    if os.path.exists("performance_log.csv"):
-        return pd.read_csv("performance_log.csv")
-    return pd.DataFrame(columns=["User", "Date", "Login Time", "Logout Time", "Duration (Hours)"])
-
-# Ruani performancën e mëparshme në `session_state`
-st.session_state['performance_log'] = load_performance()
-
-# Kontrollo nëse përdoruesi është autentifikuar
-if 'authenticated' not in st.session_state:
-    st.session_state['authenticated'] = False
-    st.session_state['role'] = None
-    st.session_state['username'] = None
-
-# Nëse përdoruesi nuk është autentifikuar, shfaq faqen e login-it
-if not st.session_state['authenticated']:
-    st.title("Biznesi Menaxhimi - Login")
-    username = st.text_input("Email")
-    password = st.text_input("Password", type="password")
-    if st.button("Login"):
-        role = authenticate(username, password)
-        if role:
-            st.session_state['authenticated'] = True
-            st.session_state['role'] = role
-            st.session_state['username'] = username
-            st.success(f"Login i suksesshëm si {role}!")
-            log_performance(username, "login")
-        else:
-            st.error("Email ose Password i pasaktë!")
-else:
-    # Paneli kryesor për të treguar përmbledhje
-    st.title("Menagjimi i Biznesit - Paneli Kryesor")
-    
-    # Seksioni i përmbledhjes
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        total_sales = 20000  # Ky është një shembull i të dhënave
-        st.metric("Të Ardhurat Mujore (€)", f"{total_sales:.2f}")
-    with col2:
-        total_products = len(st.session_state.get('inventory', []))
-        st.metric("Numri i Produkteve", total_products)
-    with col3:
-        total_users = len(st.session_state['performance_log']['User'].unique())
-        st.metric("Punonjës Aktiv", total_users)
-
-    # Menuja për të zgjedhur seksionin
-    menu = [
-        "Parashikimi i Shitjeve", 
-        "Menaxhimi i Inventarit", 
-        "Menaxhimi i Klientëve", 
-        "Raportet Financiare", 
-        "Menaxhimi i Punonjësve",
-        "Raportet e Performancës",
-        "Dil"
-    ]
-    choice = st.sidebar.selectbox("Zgjidh një funksion:", menu)
-
-    # Parashikimi i Shitjeve
-    if choice == "Parashikimi i Shitjeve":
-        st.header("🔮 Parashikimi i Shitjeve")
-        months = st.number_input("Fut numrin e muajit (1-12):", min_value=1, max_value=12, step=1)
-        if st.button("Parashiko shitjet"):
-            sales = months * 2500 + 5000
-            st.success(f"Parashikimi për shitjet është: {sales:.2f} €")
-            
-            # Grafiku i parashikimit
-            x = list(range(1, months + 1))
-            y = [i * 2500 + 5000 for i in x]
-            plt.figure(figsize=(10, 5))
-            plt.plot(x, y, marker='o', linestyle='-', color='b')
-            plt.xlabel("Muajt")
-            plt.ylabel("Shitjet (€)")
-            plt.title("Parashikimi i Shitjeve")
-            plt.grid(True)
-            st.pyplot(plt)
-
-    # Menaxhimi i Inventarit
-    elif choice == "Menaxhimi i Inventarit":
-        st.header("📦 Menaxhimi i Inventarit")
-        if 'inventory' not in st.session_state:
-            st.session_state['inventory'] = pd.DataFrame(columns=["Emri i Produktit", "Kategori", "Sasia", "Çmimi (€)", "Data e Skadencës"])
-        
-        # Shto artikuj të rinj në inventar
-        with st.form("add_item_form"):
-            item_name = st.text_input("Emri i Produktit")
-            item_category = st.selectbox("Kategoria", ["Ushqim", "Pije", "Të Tjera"])
-            item_qty = st.number_input("Sasia", min_value=1, step=1)
-            item_price = st.number_input("Çmimi (€)", min_value=0.01, step=0.01)
-            item_expiry = st.date_input("Data e Skadencës (Opsionale)", value=None)
-            submitted = st.form_submit_button("Shto Artikullin")
-
-            if submitted:
-                new_data = pd.DataFrame([[item_name, item_category, item_qty, item_price, item_expiry]],
-                                        columns=["Emri i Produktit", "Kategori", "Sasia", "Çmimi (€)", "Data e Skadencës"])
-                st.session_state['inventory'] = pd.concat([st.session_state['inventory'], new_data], ignore_index=True)
-                st.success(f"Artikulli '{item_name}' u shtua në inventar!")
-
-        st.subheader("Inventari Aktual")
-        inventory_df = st.session_state['inventory']
-        inventory_df.index = inventory_df.index + 1  # Fillon indeksi nga 1
-        st.dataframe(inventory_df)
-
-        if not inventory_df.empty:
-            selected_index = st.number_input("Indeksi për të fshirë:", min_value=1, max_value=len(inventory_df), step=1) - 1
-            if st.button("Fshi Artikullin"):
-                st.session_state['inventory'].drop(index=selected_index, inplace=True)
-                st.session_state['inventory'].reset_index(drop=True, inplace=True)
-                st.success("Artikulli u fshi me sukses!")
-
-        # Kontrollo produktet afër skadimit dhe lajmëro përdoruesin
-        st.subheader("Produktet Afër Skadimit")
-        try:
-            expiring_soon = st.session_state['inventory'][
-                (st.session_state['inventory']["Data e Skadencës"].notnull()) &
-                (pd.to_datetime(st.session_state['inventory']["Data e Skadencës"]) <= datetime.now() + timedelta(days=7))
-            ]
-            if not expiring_soon.empty:
-                expiring_soon.index = expiring_soon.index + 1  # Fillon indeksi nga 1
-                st.warning("Këto produkte do të skadojnë së shpejti:")
-                st.dataframe(expiring_soon)
-            else:
-                st.info("Asnjë produkt nuk është afër skadimit.")
-        except Exception as e:
-            st.error(f"Gabim gjatë përpunimit të skadencave: {e}")
-
-    # Raportet e Performancës
-    elif choice == "Raportet e Performancës":
-        st.header("📊 Raportet e Performancës")
-        st.write("Shfaq raportet ditore dhe mujore të performancës së punonjësve.")
-        if 'performance_log' in st.session_state:
-            st.subheader("Raporti Ditor")
-            today = datetime.now().date()
-            daily_report = st.session_state['performance_log'][st.session_state['performance_log']["Date"] == today]
-            daily_report.index = daily_report.index + 1  # Fillon indeksi nga 1
-            st.write(daily_report)
-
-            st.subheader("Raporti Mujor")
-            month_start = datetime.now().replace(day=1).date()
-            monthly_report = st.session_state['performance_log'][st.session_state['performance_log']["Date"] >= month_start]
-            monthly_report.index = monthly_report.index + 1  # Fillon indeksi nga 1
-            st.write(monthly_report)
-
-    # Butoni për Daljen
-    elif choice == "Dil":
+# Kontroll për autentifikimin
+def login():
+    if 'authenticated' not in st.session_state:
         st.session_state['authenticated'] = False
-        if st.session_state['username']:
-            log_performance(st.session_state['username'], "logout")
-        st.session_state.clear()  # Pastron të gjithë sesionin
-        st.experimental_rerun()
+
+    if not st.session_state['authenticated']:
+        st.title("Biznes Menaxhimi - Login")
+        username = st.text_input("Email")
+        password = st.text_input("Password", type="password")
+        if st.button("Login"):
+            if authenticate(username, password):
+                st.session_state['authenticated'] = True
+                st.success("Login i suksesshëm!")
+            else:
+                st.error("Email ose Password i pasaktë!")
+
+def sales_forecast():
+    st.header("🔮 Parashikimi i Shitjeve")
+    months = st.number_input("Fut numrin e muajit (1-12):", min_value=1, max_value=12, step=1)
+    if st.button("Parashiko shitjet"):
+        sales = months * 2500 + 5000
+        st.success(f"Parashikimi për shitjet është: {sales:.2f} €")
+        
+        # Grafiku i parashikimit
+        x = list(range(1, months + 1))
+        y = [i * 2500 + 5000 for i in x]
+        plt.figure(figsize=(10, 5))
+        plt.plot(x, y, marker='o', linestyle='-', color='b')
+        plt.xlabel("Muajt")
+        plt.ylabel("Shitjet (€)")
+        plt.title("Parashikimi i Shitjeve")
+        plt.grid(True)
+        st.pyplot(plt)
+
+def inventory_management():
+    st.header("📦 Menaxhimi i Inventarit")
+    if 'inventory' not in st.session_state:
+        st.session_state['inventory'] = pd.DataFrame(columns=["Emri i Produktit", "Kategori", "Sasia", "Çmimi (€)", "Data e Skadencës"])
+
+    # Formulari për shtimin e artikujve në inventar
+    with st.form("add_item_form"):
+        item_name = st.text_input("Emri i Produktit")
+        item_category = st.selectbox("Kategoria", ["Ushqim", "Pije", "Të Tjera"])
+        item_qty = st.number_input("Sasia", min_value=1, step=1)
+        item_price = st.number_input("Çmimi (€)", min_value=0.01, step=0.01)
+        item_expiry = st.date_input("Data e Skadencës (Opsionale)", value=None)
+        submitted = st.form_submit_button("Shto Artikullin")
+        
+        if submitted:
+            new_data = pd.DataFrame([[item_name, item_category, item_qty, item_price, item_expiry]],
+                                    columns=["Emri i Produktit", "Kategori", "Sasia", "Çmimi (€)", "Data e Skadencës"])
+            st.session_state['inventory'] = pd.concat([st.session_state['inventory'], new_data], ignore_index=True)
+            st.success(f"Artikulli '{item_name}' u shtua në inventar!")
+
+    # Shfaqja e inventarit aktual
+    st.subheader("Inventari Aktual")
+    st.dataframe(st.session_state['inventory'])
+
+    # Fshirja e artikujve
+    if not st.session_state['inventory'].empty:
+        selected_index = st.number_input("Indeksi për të fshirë:", min_value=0, max_value=len(st.session_state['inventory']) - 1, step=1)
+        if st.button("Fshi Artikullin"):
+            st.session_state['inventory'].drop(index=selected_index, inplace=True)
+            st.session_state['inventory'].reset_index(drop=True, inplace=True)
+            st.success("Artikulli u fshi me sukses!")
+
+    # Produktet afër skadimit
+    st.subheader("Produktet Afër Skadimit")
+    try:
+        expiring_soon = st.session_state['inventory'][
+            (st.session_state['inventory']["Data e Skadencës"].notnull()) &
+            (pd.to_datetime(st.session_state['inventory']["Data e Skadencës"]) <= datetime.now() + timedelta(days=7))
+        ]
+        if not expiring_soon.empty:
+            st.warning("Këto produkte do të skadojnë së shpejti:")
+            st.dataframe(expiring_soon)
+        else:
+            st.info("Asnjë produkt nuk është afër skadimit.")
+    except Exception as e:
+        st.error(f"Gabim gjatë përpunimit të skadencave: {e}")
+
+def client_management():
+    st.header("👥 Menaxhimi i Klientëve")
+    if 'clients' not in st.session_state:
+        st.session_state['clients'] = pd.DataFrame(columns=["Emri", "Mbiemri", "Email", "Numri i Telefonit"])
+
+    with st.form("add_client_form"):
+        client_name = st.text_input("Emri")
+        client_surname = st.text_input("Mbiemri")
+        client_email = st.text_input("Email")
+        client_phone = st.text_input("Numri i Telefonit")
+        add_client = st.form_submit_button("Shto Klientin")
+
+        if add_client:
+            client_data = pd.DataFrame([[client_name, client_surname, client_email, client_phone]], 
+                                       columns=["Emri", "Mbiemri", "Email", "Numri i Telefonit"])
+            st.session_state['clients'] = pd.concat([st.session_state['clients'], client_data], ignore_index=True)
+            st.success(f"Klienti '{client_name} {client_surname}' u shtua me sukses!")
+
+    # Lista e klientëve
+    st.subheader("Lista e Klientëve")
+    st.dataframe(st.session_state['clients'])
+
+    # Fshirja e klientëve
+    if not st.session_state['clients'].empty:
+        client_index = st.number_input("Indeksi për të fshirë:", min_value=0, max_value=len(st.session_state['clients']) - 1, step=1)
+        if st.button("Fshi Klientin"):
+            st.session_state['clients'].drop(index=client_index, inplace=True)
+            st.session_state['clients'].reset_index(drop=True, inplace=True)
+            st.success("Klienti u fshi me sukses!")
+
+def financial_reports():
+    st.header("💲 Raportet Financiare")
+    revenue = st.number_input("Të ardhurat mujore (€)", min_value=0.00, step=0.01)
+    expenses = st.number_input("Shpenzimet mujore (€)", min_value=0.00, step=0.01)
+    
+    if st.button("Gjenero Raportin"):
+        profit = revenue - expenses
+        st.subheader("Raporti Financiar")
+        st.write(f"Të ardhurat mujore: €{revenue:.2f}")
+        st.write(f"Shpenzimet mujore: €{expenses:.2f}")
+        st.write(f"Fitimi: €{profit:.2f}")
+        
+        if profit > 0:
+            st.success("Biznesi është në fitim!")
+        elif profit < 0:
+            st.error("Biznesi është në humbje!")
+        else:
+            st.info("Biznesi është në barazim!")
+
+def employee_management():
+    st.header("👨‍💼 Menaxhimi i Punonjësve")
+    if 'employees' not in st.session_state:
+        st.session_state['employees'] = pd.DataFrame(columns=["Emri", "Mbiemri", "Pozita", "Numri i Telefonit", "Email"])
+
+    with st.form("add_employee_form"):
+        employee_name = st.text_input("Emri")
+        employee_surname = st.text_input("Mbiemri")
+        employee_position = st.text_input("Pozita")
+        employee_phone = st.text_input("Numri i Telefonit")
+        employee_email = st.text_input("Email")
+        add_employee = st.form_submit_button("Shto Punonjësin")
+        
+        if add_employee:
+            employee_data = pd.DataFrame([[employee_name, employee_surname, employee_position, employee_phone, employee_email]], 
+                                         columns=["Emri", "Mbiemri", "Pozita", "Numri i Telefonit", "Email"])
+            st.session_state['employees'] = pd.concat([st.session_state['employees'], employee_data], ignore_index=True)
+            st.success(f"Punonjësi '{employee_name} {employee_surname}' u shtua me sukses!")
+
+    # Lista e punonjësve
+    st.subheader("Lista e Punonjësve")
+    st.dataframe(st.session_state['employees'])
+
+    # Fshirja e punonjësve
+    if not st.session_state['employees'].empty:
+        employee_index = st.number_input("Indeksi për të fshirë:", min_value=0, max_value=len(st.session_state['employees']) - 1, step=1)
+        if st.button("Fshi Punonjësin"):
+            st.session_state['employees'].drop(index=employee_index, inplace=True)
+            st.session_state['employees'].reset_index(drop=True, inplace=True)
+            st.success("Punonjësi u fshi me sukses!")
+
+# Zgjidhja e funksionit bazuar në zgjedhjen në sidebar
+def main():
+    login()
+    if st.session_state['authenticated']:
+        st.sidebar.title("Menuja")
+        menu = {
+            "Parashikimi i Shitjeve": sales_forecast,
+            "Menaxhimi i Inventarit": inventory_management,
+            "Menaxhimi i Klientëve": client_management,
+            "Raportet Financiare": financial_reports,
+            "Menaxhimi i Punonjësve": employee_management
+        }
+        choice = st.sidebar.selectbox("Zgjidh një funksion:", list(menu.keys()))
+        menu[choice]()
+
+if __name__ == "__main__":
+    main()
