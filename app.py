@@ -3,28 +3,63 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
 
-# Vendosja e konfigurimit të faqes në fillim
-st.set_page_config(page_title="Menaxhimi i Biznesit", layout="centered")
+# Funksioni që kontrollon vlefshmërinë e pajtimit
+def check_subscription(user_id):
+    # Përdorim një strukturë të përkohshme për pajtimet (zëvendësoje me bazën e të dhënave reale më vonë)
+    if 'subscriptions' not in st.session_state:
+        # Për shembull, ruaj një pajtim të përkohshëm për testim
+        st.session_state['subscriptions'] = {
+            'user_id': {
+                'plan_type': '1 muaj',
+                'start_date': datetime.now() - timedelta(days=15),
+                'end_date': datetime.now() + timedelta(days=15)  # Skadon pas 15 ditësh
+            }
+        }
 
-# Funksioni për autentifikim
-def authenticate(username, password):
-    return username == "admin" and password == "admin"
+    subscription = st.session_state['subscriptions'].get(user_id, None)
+    if subscription:
+        today = datetime.today()
+        end_date = subscription["end_date"]
+        if today > end_date:
+            return False  # Pajtimi ka skaduar
+        return True  # Pajtimi është aktiv
+    return False  # Nuk ka pajtim të regjistruar
 
-# Kontrollo nëse përdoruesi është autentifikuar
-if 'authenticated' not in st.session_state:
-    st.session_state['authenticated'] = False
+# Funksioni që ridrejton përdoruesin për rinovim nëse pajtimi ka skaduar
+def access_app(user_id):
+    if check_subscription(user_id):
+        # Hap aplikacionin kryesor
+        return True
+    else:
+        st.warning("Pajtimi juaj ka skaduar! Ju lutemi rinovoni për të vazhduar.")
+        st.button("Rinovo Pajtim")
+        return False
 
-# Nëse përdoruesi nuk është autentifikuar, shfaq faqen e login-it
-if not st.session_state['authenticated']:
-    st.title("Soher - Login")
-    username = st.text_input("Email")
-    password = st.text_input("Password", type="password")
-    if st.button("Login"):
-        if authenticate(username, password):
-            st.session_state['authenticated'] = True
-            st.success("Login i suksesshëm!")
-        else:
-            st.error("Email ose Password i pasaktë!")
+# Kontrollo nëse përdoruesi ka një pajtim aktiv për të vazhduar
+user_id = 'user_id'  # Identifikuesi i përdoruesit (mund të ndryshohet me sistemin e autentifikimit më vonë)
+if access_app(user_id):
+    # Vendosja e konfigurimit të faqes në fillim
+    st.set_page_config(page_title="Menagjimi i Biznesit", layout="centered")
+
+    # Funksioni për autentifikim
+    def authenticate(username, password):
+        return username == "admin" and password == "admin"
+
+    # Kontrollo nëse përdoruesi është autentifikuar
+    if 'authenticated' not in st.session_state:
+        st.session_state['authenticated'] = False
+
+    # Nëse përdoruesi nuk është autentifikuar, shfaq faqen e login-it
+    if not st.session_state['authenticated']:
+        st.title("Biznesi Menaxhimi - Login")
+        username = st.text_input("Email")
+        password = st.text_input("Password", type="password")
+        if st.button("Login"):
+            if authenticate(username, password):
+                st.session_state['authenticated'] = True
+                st.success("Login i suksesshëm!")
+            else:
+                st.error("Email ose Password i pasaktë!")
 else:
     # Pjesa kryesore e aplikacionit pas autentifikimit
     st.markdown(
