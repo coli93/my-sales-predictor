@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
 
 # Vendosja e konfigurimit të faqes në fillim
-st.set_page_config(page_title="Menaxhimi i Biznesit", layout="centered")
+st.set_page_config(page_title="Menagjimi i Biznesit", layout="centered")
 
 # Funksioni për autentifikim
 def authenticate(username, password):
@@ -16,13 +16,14 @@ if 'authenticated' not in st.session_state:
 
 # Nëse përdoruesi nuk është autentifikuar, shfaq faqen e login-it
 if not st.session_state['authenticated']:
-    st.title("Soher - Login")
+    st.title("Biznesi Menaxhimi - Login")
     username = st.text_input("Email")
     password = st.text_input("Password", type="password")
     if st.button("Login"):
         if authenticate(username, password):
             st.session_state['authenticated'] = True
             st.success("Login i suksesshëm!")
+            # Këtu hiqni përdorimin e `st.experimental_rerun()`
         else:
             st.error("Email ose Password i pasaktë!")
 else:
@@ -40,7 +41,7 @@ else:
         unsafe_allow_html=True
     )
 
-    st.title("Menaxhimi i Biznesit")
+    st.title("Menagjimi i Biznesit")
 
     # Menuja për të zgjedhur seksionin
     menu = [
@@ -54,7 +55,7 @@ else:
 
     # Kontrollimi i secilit zgjedhje duke përdorur një bllok `if` dhe `elif`
     if choice == "Parashikimi i Shitjeve":
-        st.header("💹 Parashikimi i Shitjeve")
+        st.header("🔮 Parashikimi i Shitjeve")
         months = st.number_input("Fut numrin e muajit (1-12):", min_value=1, max_value=12, step=1)
         if st.button("Parashiko shitjet"):
             sales = months * 2500 + 5000
@@ -91,12 +92,11 @@ else:
                 st.success(f"Artikulli '{item_name}' u shtua në inventar!")
 
         st.subheader("Inventari Aktual")
-        inventory_df = st.session_state['inventory'].copy()
-        inventory_df.index = range(1, len(inventory_df) + 1)  # Fillon numerimin nga 1
+        inventory_df = st.session_state['inventory']
         st.dataframe(inventory_df)
 
         if not inventory_df.empty:
-            selected_index = st.number_input("Indeksi për të fshirë:", min_value=1, max_value=len(inventory_df), step=1) - 1
+            selected_index = st.number_input("Indeksi për të fshirë:", min_value=0, max_value=len(inventory_df) - 1, step=1)
             if st.button("Fshi Artikullin"):
                 st.session_state['inventory'].drop(index=selected_index, inplace=True)
                 st.session_state['inventory'].reset_index(drop=True, inplace=True)
@@ -109,7 +109,6 @@ else:
                 (pd.to_datetime(st.session_state['inventory']["Data e Skadencës"]) <= datetime.now() + timedelta(days=7))
             ]
             if not expiring_soon.empty:
-                expiring_soon.index = range(1, len(expiring_soon) + 1)  # Fillon numerimin nga 1
                 st.warning("Këto produkte do të skadojnë së shpejti:")
                 st.dataframe(expiring_soon)
             else:
@@ -130,11 +129,11 @@ else:
                     update_submitted = st.form_submit_button("Përditëso Artikullin")
 
                     if update_submitted:
-                        st.session_state['inventory'].at[item_to_update - 1, "Emri i Produktit"] = item_name
-                        st.session_state['inventory'].at[item_to_update - 1, "Kategori"] = item_category
-                        st.session_state['inventory'].at[item_to_update - 1, "Sasia"] = item_qty
-                        st.session_state['inventory'].at[item_to_update - 1, "Çmimi (€)"] = item_price
-                        st.session_state['inventory'].at[item_to_update - 1, "Data e Skadencës"] = item_expiry
+                        st.session_state['inventory'].at[item_to_update, "Emri i Produktit"] = item_name
+                        st.session_state['inventory'].at[item_to_update, "Kategori"] = item_category
+                        st.session_state['inventory'].at[item_to_update, "Sasia"] = item_qty
+                        st.session_state['inventory'].at[item_to_update, "Çmimi (€)"] = item_price
+                        st.session_state['inventory'].at[item_to_update, "Data e Skadencës"] = item_expiry
                         st.success("Artikulli u përditësua me sukses!")
 
     elif choice == "Menaxhimi i Klientëve":
@@ -158,12 +157,11 @@ else:
                 st.success(f"Klienti '{client_name} {client_surname}' u shtua me sukses!")
         
         st.subheader("Lista e Klientëve")
-        clients_df = st.session_state['clients'].copy()
-        clients_df.index = range(1, len(clients_df) + 1)  # Fillon numerimin nga 1
+        clients_df = st.session_state['clients']
         st.dataframe(clients_df)
 
         if not clients_df.empty:
-            client_index = st.number_input("Indeksi për të fshirë:", min_value=1, max_value=len(clients_df), step=1) - 1
+            client_index = st.number_input("Indeksi për të fshirë:", min_value=0, max_value=len(clients_df) - 1, step=1)
             if st.button("Fshi Klientin"):
                 st.session_state['clients'].drop(index=client_index, inplace=True)
                 st.session_state['clients'].reset_index(drop=True, inplace=True)
@@ -212,12 +210,11 @@ else:
                 st.success(f"Punonjësi '{employee_name} {employee_surname}' u shtua me sukses!")
         
         st.subheader("Lista e Punonjësve")
-        employees_df = st.session_state['employees'].copy()
-        employees_df.index = range(1, len(employees_df) + 1)  # Fillon numerimin nga 1
+        employees_df = st.session_state['employees']
         st.dataframe(employees_df)
 
         if not employees_df.empty:
-            employee_index = st.number_input("Indeksi për të fshirë:", min_value=1, max_value=len(employees_df), step=1) - 1
+            employee_index = st.number_input("Indeksi për të fshirë:", min_value=0, max_value=len(employees_df) - 1, step=1)
             if st.button("Fshi Punonjësin"):
                 st.session_state['employees'].drop(index=employee_index, inplace=True)
                 st.session_state['employees'].reset_index(drop=True, inplace=True)
